@@ -1,92 +1,12 @@
 
-#ifdef __WITH_ROOT__
+#if defined __WITH_ROOT__ || defined __CLING__
 #include "plot_LTF1D.cxx"
 #endif
 //#include "LTF.cxx"
 #include <iostream>
 #include <fstream>
 #include "LTF/LTF.h"
-
-std::vector<std::vector<double > > read_correlations(const std::string& filename, int ncol) { 
-   // read correlation files
-   std::vector<std::vector<double > > ret(ncol);
-   std::ifstream istrm(filename.c_str(), std::ios::binary);
-   if (!istrm.is_open()) {
-      std::cout << "failed to open " << filename << std::endl;
-      exit(1);
-   }
-   for ( int icol=0 ; icol<ncol ; icol++ ) {
-      double value;
-      for ( int i=0 ; i<ncol ; i++ ) {
-         istrm >> value;
-         ret[icol].push_back(value);
-         // if ( icol==i && value!= 1 ) {
-         //    std::cout<<"ERROR! diagonal element must be 1, but is: "<<value<<endl;
-         //    exit(1);
-         // }
-      }
-      //std::cout<<"read: "<< ret[icol].size()<<" values in row "<<icol<<std::endl;
-   }
-   return ret;
-}
-
-std::vector<std::vector<double > > corr_to_cov( const std::vector<std::vector<double > >& corr, const std::vector<double >& percenterr, const std::vector<double >& data) { 
-   std::vector<double > err(data.size());
-   for ( int i = 0 ; i<err.size() ; i++ ) 
-      err[i] = percenterr[i]/100.*data[i];
-   
-   std::vector<std::vector<double > > cov(err.size());
-   for ( int i = 0 ; i<err.size() ; i++ ) {
-      cov[i].resize(err.size());
-      for ( int j = 0 ; j<err.size() ; j++ ) {
-         cov[i][j] = corr[i][j]*err[i]*err[j];
-         //if ( corr[i][j] != 0 ) cout<<i<<", "<<j<<"\t"<<corr[i][j]<<"\t"<<percenterr[i]<<"\t"<<data[i]<<"\te: "<<err[i]<<"\tcov: "<<cov[i][j]<<endl;
-      }
-   }
-
-   for ( int i = 0 ; i<err.size() ; i++ ) {
-      for ( int j = 0 ; j<i ; j++ ) {
-         if ( fabs((cov[i][j] / cov[j][i]-1.) > 1e-3) )
-            cout<<i<<", "<<j<<"\t"<<corr[i][j]<<"\t"<<percenterr[i]<<"\t"<<data[i]<<"\te: "<<err[i]<<"\tcov: "<<cov[i][j]<<"\t ratio ij/ji: "<<(cov[i][j] / cov[j][i]-1.)<<endl;
-      }
-   }
-
-   return cov;
-}
-
-
-
-std::map < std::string, std::vector<double> > read_input_table(std::string filename, int ncol ) {
-   // read input data table from file
-   std::map < std::string, std::vector<double> > ret;
-   std::vector<std::string> cols;
-   // open file for reading
-   std::ifstream istrm(filename.c_str(), std::ios::binary);
-   if (!istrm.is_open()) {
-      std::cout << "failed to open " << filename << std::endl;
-      exit(1);
-   }
-   for ( int c=0 ; c<ncol ; c++ ) {
-      std::string colname;
-      istrm >> colname;
-      //cout<<colname<<endl;
-      ret[colname] = vector<double>();
-      cols.push_back(colname);
-   }
-   while ( istrm.good()) {
-      double value;
-      for ( int c=0 ; c<ncol ; c++ ) {
-         istrm >> value;
-         if ( !istrm.good() ) break;
-         //cout<<value<<"  ";
-         std::string colname = cols[c];
-         ret[colname].push_back(value);
-      }      
-      //cout<<endl;
-   }
-   cout<<"Info.  [read_input_table]  Read "<<ret.size()<<" rows."<<endl;
-   return ret;
-}
+#include "LTF_Tools.cxx"
 
 // ----------------------------------------------------------------------------------------------------
 //
@@ -112,11 +32,11 @@ int example_CMSinclusivejets_NN30_BRSSWpaper() {
    //map < string, vector<double> > templates_CT10nlo = read_input_table("CT10nlo_fixedPDF.txt",16); string PDF="CT10";
    //map < string, vector<double> > templates_CT10nlo = read_input_table("MSTWnlo_fixedPDF.txt",16);  string PDF="MSTW";
    //map < string, vector<double> > templates_CT10nlo = read_input_table("CT14nlo_fixedPDF.txt",16);  string PDF="CT14"; // ok, wie bei BRSSW
-   map < string, vector<double> > templates_CT10nlo = read_input_table("data/NN30nlo_fixedPDF.txt",16);  string PDF="NN30"; // ok, wie bei BRSSW. Central result
+   map < string, vector<double> > templates_CT10nlo = LTF_Tools::read_input_table("data/NN30nlo_fixedPDF.txt",16);  string PDF="NN30"; // ok, wie bei BRSSW. Central result
 
    // --- data
-   map < string, vector<double> > input_table = read_input_table("data/CMS_data.txt",32);
-   std::vector<std::vector<double > > corr =read_correlations("data/CMS_correlations.txt",133);
+   map < string, vector<double> > input_table = LTF_Tools::read_input_table("data/CMS_data.txt",32);
+   std::vector<std::vector<double > > corr =LTF_Tools::read_correlations("data/CMS_correlations.txt",133);
    vector<double> data    = input_table["Sigma"];
 
    // apply np_corr and ewk_cor to NLO predictions
@@ -162,7 +82,7 @@ int example_CMSinclusivejets_NN30_BRSSWpaper() {
 
    // ---- set uncertainties
    //ltf_CMS.AddErrorPercent( "stat",  input_table["stat"],  0.  );
-   auto cov  = corr_to_cov(corr, input_table["stat"], data);
+   auto cov  = LTF_Tools::corr_to_cov(corr, input_table["stat"], data);
    ltf_CMS.AddError( "stat",  cov  );
    ltf_CMS.AddErrorPercent( "uncor"       , input_table["uncor"      ], 0.  );
    ltf_CMS.AddErrorPercent( "npcorerr"    , input_table["npcorerr"   ], 1.  ); // CMS not included in chi2 (LTF::Uncertainty::External), BRSSW included
@@ -190,13 +110,13 @@ int example_CMSinclusivejets_NN30_BRSSWpaper() {
    ltf_CMS.AddErrorPercent( "JEC10"       , input_table["JEC10"      ], 1.  ); // zero
    
    if ( PDF=="NN30" || PDF=="NN31") {
-      auto covPDF_rel = read_correlations("data/NNPDF30_nlo_as_0118.PDFuncertainties.rel.txt",133);
+      auto covPDF_rel = LTF_Tools::read_correlations("data/NNPDF30_nlo_as_0118.PDFuncertainties.rel.txt",133);
       ltf_CMS.AddErrorRelative("NNPDF", covPDF_rel );
    }
    else {
       map < string, vector<double> > pdferrors;
-      if ( PDF == "CT10" ) pdferrors = read_input_table("data/log.CT10.errorAbsolut.txt",26);
-      if ( PDF == "MSTW" ) pdferrors = read_input_table("data/log.MSTW2008nlo68cl.errorFabsAbsolut.txt",20);
+      if ( PDF == "CT10" ) pdferrors = LTF_Tools::read_input_table("data/log.CT10.errorAbsolut.txt",26);
+      if ( PDF == "MSTW" ) pdferrors = LTF_Tools::read_input_table("data/log.MSTW2008nlo68cl.errorFabsAbsolut.txt",20);
       //if ( PDF == "MSTW" ) pdferrors = read_input_table("log.MSTW2008nlo68cl.errorAbsolut.txt",20);
       //map < string, vector<double> > pdferrors = read_input_table("log.CT10.errorPercent.txt",26);
       //map < string, vector<double> > pdferrors = read_input_table("log.CT10.errorFabsAbsolut.txt",26);
@@ -257,7 +177,7 @@ int example_CMSinclusivejets_NN30_BRSSWpaper() {
    for ( int i = 0; i<data.size()+1; i++ ) bins.push_back(i);
    cout<<"data.size: "<<data.size()<<"\t"<<bins.size()<<endl;
 
-#ifdef __WITH_ROOT__
+#if defined __WITH_ROOT__ || defined __CLING__
    plotLiTeFit(fit,bins,"d^{2}#sigma_{jet}/dp_{T}d|y| [pb/GeV]","Reference value:  #alpha_{s}(M_{Z})","Bin");//, const vector<double> bins)
 #endif
    return 0;
