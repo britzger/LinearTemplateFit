@@ -1,6 +1,6 @@
 
 //#include "include/LTF/LTF.h"
-//#include "LTF.cxx"
+#include <fstream>
 #include "LTF/LTF.h"
 
 #if defined __WITH_ROOT__ || defined __CLING__
@@ -234,7 +234,10 @@ int example_CMSinclusivejets_MSTW_CMSpaper() {
    //map < string, vector<double> > pdferrors = read_input_table("log.MSTW2008nlo68cl.errorAbsolut.txt",20);
    //map < string, vector<double> > pdferrors = read_input_table("log.CT14.errorPercent.txt",28);
    for ( int i = 1; i<= pdferrors.size() ; i++ ) {
-     string ename = Form("PDF_%02d",i);
+      //string ename = Form("PDF_%02d",i);
+      char buffer [20];
+      sprintf(buffer,"PDF_%02d",i);
+      string ename = buffer;
      // //for ( int b = 0 ; b<pdferrors[ename].size() ;b++ ) pdferrors[ename][b] *=0.5;
      if ( PDF=="CT10" || PDF=="CT14") { // 68%CL
         for ( int b = 0 ; b<pdferrors[ename].size() ;b++ ) pdferrors[ename][b] /= 1.645;
