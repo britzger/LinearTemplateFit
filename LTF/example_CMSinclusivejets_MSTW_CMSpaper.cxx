@@ -57,7 +57,7 @@ int example_CMSinclusivejets_MSTW_CMSpaper() {
 
    // --- data
    map < string, vector<double> > input_table = LTF_Tools::read_input_table("data/CMS_data.txt",32);
-   std::vector<std::vector<double > > corr    = LTF_Tools::read_correlations("data/CMS_correlations.txt",133);
+   std::vector<std::vector<double > > corr    = LTF_Tools::read_correlations("data/CMS_correlations.txt",133,true);
    vector<double> data                        = input_table["Sigma"];
 
    // apply np_corr and ewk_cor to NLO predictions
