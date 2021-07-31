@@ -44,6 +44,8 @@
 //! CMS inclusive jet data arXiv:1212.6660 using NLO QCD predictions,
 //! similar to Eur.Phys.J.C 79 (2019) 68 [arXiv:1712.00480]
 //!
+//! Data published in Phys.Rev.D 87 (2013) 112002, PRD 87 (2013) 119902 (erratum) [arXiv:1212.6660]
+//! 
 // -------------------------------------------------------------------- //
 int example_CMSinclusivejets_NN30_BRSSWpaper() {
    using namespace std;

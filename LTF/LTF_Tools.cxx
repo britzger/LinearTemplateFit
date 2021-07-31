@@ -12,7 +12,7 @@ namespace LTF_Tools {
 //!
 //!  Read a matrix from a simple ascii file
 //!
-std::vector<std::vector<double > > read_correlations(std::string filename, int ncol) { 
+   std::vector<std::vector<double > > read_correlations(std::string filename, int ncol, bool DoCorrTest=false) { 
    // read correlation files
    std::vector<std::vector<double > > ret(ncol);
    std::ifstream istrm(filename.c_str(), std::ios::binary);
@@ -25,10 +25,10 @@ std::vector<std::vector<double > > read_correlations(std::string filename, int n
       for ( int i=0 ; i<ncol ; i++ ) {
          istrm >> value;
          ret[icol].push_back(value);
-         // if ( icol==i && value!= 1 ) {
-         //    std::cout<<"ERROR! diagonal element must be 1, but is: "<<value<<endl;
-         //    exit(1);
-         // }
+         if ( DoCorrTest && icol==i && value!= 1 ) {
+            std::cout<<"ERROR! diagonal element must be 1, but is: "<<value<<endl;
+            exit(1);
+         }
       }
       //std::cout<<"read: "<< ret[icol].size()<<" values in row "<<icol<<std::endl;
    }
