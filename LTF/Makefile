@@ -30,6 +30,7 @@ root-slib:
 # programs
 programs =  example_CMSinclusivejets_NN30_BRSSWpaper 
 programs += example_CMSinclusivejets_MSTW_CMSpaper
+programs += example_gaus_LTF
 bin: $(programs)
 
 $(programs): %: %.cxx

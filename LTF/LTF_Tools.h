@@ -1,10 +1,13 @@
 
 #include "LTF/LTF.h"
 
+#include <fstream>
+#include <string>
+#include <vector>
+#include <map>
 
-
-namespace LTF_Tools {
-
+class LTF_Tools {
+public:
 
 // _____________________________________________________________________________________ //
 //! 
@@ -12,6 +15,7 @@ namespace LTF_Tools {
 //!
 //!  Read a matrix from a simple ascii file
 //!
+static
    std::vector<std::vector<double > > read_correlations(std::string filename, int ncol, bool DoCorrTest=false) { 
    // read correlation files
    std::vector<std::vector<double > > ret(ncol);
@@ -43,6 +47,7 @@ namespace LTF_Tools {
 //!
 //!  calculate a covariance matrix from a correlation matrix and uncertainties
 //!
+static
 std::vector<std::vector<double > > corr_to_cov( const std::vector<std::vector<double > >& corr, const std::vector<double >& percenterr, const std::vector<double >& data) { 
    std::vector<double > err(data.size());
    for ( int i = 0 ; i<err.size() ; i++ ) 
@@ -74,6 +79,7 @@ std::vector<std::vector<double > > corr_to_cov( const std::vector<std::vector<do
 //!
 //! read input data table from file and return it as a map
 //!
+static
 std::map < std::string, std::vector<double> > read_input_table(std::string filename, int ncol ) {
    std::map < std::string, std::vector<double> > ret;
    std::vector<std::string> cols;

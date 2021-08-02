@@ -22,6 +22,8 @@
 
 using namespace std;
 
+class LTF_ROOTTools {
+public:
 
 // __________________________________________________________________________________ //
 //!
@@ -29,6 +31,7 @@ using namespace std;
 //!
 //! read input data table from file 
 //!
+static
 std::map < std::string, std::vector<double> > read_input_table2(std::string filename, int ncol ) {
    std::map < std::string, std::vector<double> > ret;
    std::vector<std::string> cols;
@@ -66,6 +69,7 @@ std::map < std::string, std::vector<double> > read_input_table2(std::string file
 //!  with random events according to a gauss
 //!  distribution around M
 //!
+static
 TH1D* MakeHistogramPlot(int nEvents, int seed, double mean, double sigma, vector<double> bins ) {
    TRandom3 rn(seed);
    
@@ -84,6 +88,7 @@ TH1D* MakeHistogramPlot(int nEvents, int seed, double mean, double sigma, vector
 //!  MakeHistogramPlot
 //!  make a histogram from an Eigen::Vector for plotting purposes
 //!
+static
 TH1D* MakeHistogramPlot(const Eigen::VectorXd& values, vector<double> bins ={}, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V = {} ) {
    TH1D* hist = bins.empty() ?
       new TH1D("hist","hist",values.size(),0,values.size() ) :
@@ -107,6 +112,7 @@ TH1D* MakeHistogramPlot(const Eigen::VectorXd& values, vector<double> bins ={}, 
 //!
 //!  Make a TGraph for plotting purposes
 //!
+static
 TGraphErrors* MakeTGraphPlot(const Eigen::VectorXd& xvalues, int ibin, const Eigen::MatrixXd& Y,
                          const std::map<std::string,Eigen::MatrixXd >& VSysY = {}
    ) {
@@ -130,6 +136,7 @@ TGraphErrors* MakeTGraphPlot(const Eigen::VectorXd& xvalues, int ibin, const Eig
 //!
 //!  make a TGraph for plotting purposes
 //!
+static
 TGraphErrors* MakeTGraph(const Eigen::VectorXd& xvalues, int ibin, const Eigen::MatrixXd& Y,
                          const std::map<std::string,Eigen::MatrixXd >& VSysY = {}
    ) {
@@ -157,6 +164,7 @@ TGraphErrors* MakeTGraph(const Eigen::VectorXd& xvalues, int ibin, const Eigen::
 //! make a histogram and fill it with random events according to a gauss
 //! distribution around M
 //!
+static
 TH1D* MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<double> bins ) {
    TRandom3 rn(seed);
    
@@ -176,6 +184,7 @@ TH1D* MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<dou
 //!
 //!  make a histogram from an Eigen::Vector for plotting purposes
 //!
+static
 TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V = {} ) {
    TH1D* hist = bins.empty() ?
       new TH1D("hist","hist",values.size(),0,values.size() ) :
@@ -196,11 +205,6 @@ TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, cons
 
 
 
-
-
-
-
-
 // __________________________________________________________________________________ //
 //!
 //!
@@ -209,6 +213,7 @@ TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, cons
 //!  The binning needs to be provided to the plotting function,
 //!  since this is not included in LTF::LiTeFit
 //! 
+static
 void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
                  const string& yaxistitle    = "value [unit]",
                  const string& referencename = "Reference value (#alpha) [unit]",
@@ -526,3 +531,4 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
 }
 
 
+};
