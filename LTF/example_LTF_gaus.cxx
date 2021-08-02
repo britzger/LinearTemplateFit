@@ -9,7 +9,7 @@
 
 // __________________________________________________________________________________ //
 // main
-int example_gaus_LTF() {
+int example_LTF_gaus() {
    using namespace std;
 
    gStyle->SetOptStat(0);
@@ -88,5 +88,5 @@ int example_gaus_LTF() {
 
 
 int main() {
-   return example_gaus_LTF();
+   return example_LTF_gaus();
 }

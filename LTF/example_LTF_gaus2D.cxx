@@ -10,7 +10,7 @@ using namespace std;
 
 // __________________________________________________________________________________ //
 //! main
-int example_gaus2D_LTF() {
+int example_LTF_gaus2D() {
 
    gStyle->SetOptStat(0);
    gSystem->Load("libLTF.so");
@@ -138,5 +138,5 @@ int example_gaus2D_LTF() {
 
 
 int main() {
-   return example_gaus2D_LTF();
+   return example_LTF_gaus2D();
 }
