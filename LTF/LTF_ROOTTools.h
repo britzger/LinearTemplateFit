@@ -17,8 +17,11 @@
 #include <TGraphErrors.h>
 #include <TLatex.h>
 #include <TF1.h>
+#include <TF2.h>
 #include <TLine.h>
 #include <TRandom3.h>
+#include <TGraph2DErrors.h>
+#include <TGraph2D.h>
 
 using namespace std;
 
@@ -61,74 +64,6 @@ std::map < std::string, std::vector<double> > read_input_table2(std::string file
 }
 
 
-// __________________________________________________________________________________ //
-//!
-//!  MakeHistogramPlot
-//!
-//!  make a histogram and fill it 
-//!  with random events according to a gauss
-//!  distribution around M
-//!
-static
-TH1D* MakeHistogramPlot(int nEvents, int seed, double mean, double sigma, vector<double> bins ) {
-   TRandom3 rn(seed);
-   
-   TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
-   hist->Sumw2();
-   for ( int i=0 ; i<nEvents; i++ ) {
-      hist->Fill( rn.Gaus(mean,sigma), 1 );
-   }
-   return hist;
-}
-
-
-
-// __________________________________________________________________________________ //
-//!
-//!  MakeHistogramPlot
-//!  make a histogram from an Eigen::Vector for plotting purposes
-//!
-static
-TH1D* MakeHistogramPlot(const Eigen::VectorXd& values, vector<double> bins ={}, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V = {} ) {
-   TH1D* hist = bins.empty() ?
-      new TH1D("hist","hist",values.size(),0,values.size() ) :
-      new TH1D("hist","hist",bins.size()-1, &bins[0]);
-   if ( bins.size() && values.size() != bins.size()-1 ) {cout<<"ERROR! binning and number of entries does not fit!"<<endl;exit(1);}
-   for ( size_t i = 0 ;i<bins.size()-1; i++ ) {
-      hist->SetBinContent(i+1, values(i));
-      if ( V.size() ) {
-         double e2 = 0;
-         for ( auto apair : V ) {
-            e2 += apair.second(i,i);
-         }
-         hist->SetBinError(i+1, sqrt(e2) );
-      }
-   }
-   return hist;
-}
-
-
-// __________________________________________________________________________________ //
-//!
-//!  Make a TGraph for plotting purposes
-//!
-static
-TGraphErrors* MakeTGraphPlot(const Eigen::VectorXd& xvalues, int ibin, const Eigen::MatrixXd& Y,
-                         const std::map<std::string,Eigen::MatrixXd >& VSysY = {}
-   ) {
-   TGraphErrors* graph = new TGraphErrors();
-   for ( size_t i = 0 ; i<xvalues.size() ; i++ ) {
-      double yvalue = Y(ibin,i);
-      graph->SetPoint(i,xvalues(i),yvalue);
-      double ey2 = 0;
-      for ( auto [name,Vy] : VSysY ) {
-         ey2 += pow(Vy(ibin,i),2);
-      }
-      graph->SetPointError(i,0,sqrt(ey2));
-   }
-   return graph;
-}
-
 
 // __________________________________________________________________________________ //
 //! 
@@ -155,6 +90,30 @@ TGraphErrors* MakeTGraph(const Eigen::VectorXd& xvalues, int ibin, const Eigen::
 }
 
 
+// __________________________________________________________________________________ //
+//! 
+//!  MakeTGraph2D
+//!
+//!  make a TGraph2D for plotting purposes
+//!
+static
+TGraph2DErrors* MakeTGraph2D(const Eigen::VectorXd& xvalues, const Eigen::VectorXd& yvalues,
+                             int ibin, const Eigen::MatrixXd& Y,
+                             const std::map<std::string,Eigen::MatrixXd >& VSysY = {}
+   ) {
+
+   TGraph2DErrors* graph = new TGraph2DErrors();
+   for ( int i = 0 ; i<xvalues.size() ; i++ ) {
+      double zvalue = Y(ibin,i);
+      graph->SetPoint(i,xvalues(i),yvalues(i),zvalue);
+      double ey2 = 0;
+      for ( auto [name,Vy] : VSysY ) {
+         ey2 += pow(Vy(ibin,i),2);
+      }
+      graph->SetPointError(i,0,0,sqrt(ey2));
+   }
+   return graph;
+}
 
 
 // __________________________________________________________________________________ //
@@ -175,6 +134,7 @@ TH1D* MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<dou
    }
    return hist;
 }
+
 
 
 
@@ -231,11 +191,11 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
    map<double,TH1D*> templates;
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
       //double ref = reference_values(iref);
-      templates[iref] = MakeHistogramPlot(fit.Y.col(iref),bins);
+      templates[iref] = MakeHistogram(fit.Y.col(iref),bins);
    }
 
-   TH1D* data    = MakeHistogramPlot(fit.Dt,bins,fit.Vs);
-   TH1D* TheoFit = MakeHistogramPlot(fit.TheoFit,bins);
+   TH1D* data    = MakeHistogram(fit.Dt,bins,fit.Vs);
+   TH1D* TheoFit = MakeHistogram(fit.TheoFit,bins);
    
    TCanvas c1("c1","LTF plots",800,800);
    c1.SetRightMargin(0.05);
@@ -333,7 +293,7 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
       gdata->SetPointError(0,0,data->GetBinError(ibin+1));
       gdata->SetMarkerStyle(20);
 
-      TGraphErrors* graph = MakeTGraphPlot(fit.M.col(1),ibin,fit.Y,fit.SysY);
+      TGraphErrors* graph = MakeTGraph(fit.M.col(1),ibin,fit.Y,fit.SysY);
       graph->Fit("pol1","Q");
       TF1* pol1w = (TF1*)graph->GetFunction("pol1")->Clone("pol1w");
       pol1w->SetLineColor(922);
@@ -527,6 +487,223 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
     c1.Print( "plots/LTF_chi2.pdf");
 
     c1.Print( (string(ps_name)+"]").c_str() );
+   
+}
+
+
+// __________________________________________________________________________________ //
+//!
+//!
+//!  Plot a LiTeFit object using ROOT
+//!
+//!  The binning needs to be provided to the plotting function,
+//!  since this is not included in LTF::LiTeFit
+//! 
+static
+
+
+// __________________________________________________________________________________ //
+// plot a LiTeFit object
+void plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins ){
+
+   auto& M = fit.M;
+   if ( M.cols() != 3 ) {cout<<"Error! only 2-dim plotting implemented."<<endl;exit(1);}
+   Eigen::VectorXd reference_values1 = M.col(1);
+   Eigen::VectorXd reference_values2 = M.col(2);
+   TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
+
+
+   map<double,TH1D*> templates;
+   set<double> r1,r2;
+   for ( int iref = 0 ; iref<reference_values1.size() ; iref++ ) {
+      double ref = reference_values1(iref);
+      templates[iref] = MakeHistogram(fit.Y.col(iref),bins);
+      r1.insert(reference_values1(iref));
+      r2.insert(reference_values2(iref));
+   }
+   
+   if ( r1.size()<=1 ) {
+      cout<<"ERROR! at least two distinct reference points for dimension 1 must be given"<<endl;
+      exit(1);
+   }
+   if ( r2.size()<=1 ) {
+      cout<<"ERROR! at least two distinct reference points for dimension 2 must be given"<<endl;
+      exit(1);
+   }
+
+   double xmin = 2.* (*r1.begin())  - (*(++r1.begin()))*0.9999;
+   double xmax = 2.* (*r1.rbegin()) - (*(++r1.rbegin()))*1.00001;
+   double ymin = 2.* (*r2.begin())  - (*(++r2.begin()))*0.9999;
+   double ymax = 2.* (*r2.rbegin()) - (*(++r2.rbegin()))*1.00001;
+   
+   TH1D* data    = MakeHistogram(fit.Dt,bins,fit.Vs);
+   TH1D* TheoFit = MakeHistogram(fit.TheoFit,bins);
+   
+   TCanvas c1("c1","LTF plots",800,800);
+   c1.SetRightMargin(0.05);
+   c1.SetLeftMargin(0.15);
+   c1.SetTopMargin(0.08);
+   // c1.SetRightMargin(0.02);
+
+   const char* ps_name = "LTF2D_plots.ps";
+   c1.Print( (string(ps_name)+"[").c_str() );
+
+   // ---------------------------------------------- //
+   // main plot
+   // ---------------------------------------------- //
+   for ( int iref = 0 ; iref<reference_values1.size() ; iref++ ) {
+      templates[iref]->SetLineWidth(2);
+      if ( iref == 0 ) {
+         templates[0]->SetTitle("Linear Template Fit;Observable [unit]; Value [unit]");
+         templates[0]->SetLineColor(kRed+2);
+         templates[0]->SetMinimum(0);
+         templates[0]->SetMaximum(templates[0]->GetMaximum()*1.7);
+         templates[0]->SetLineWidth(3);
+         templates[0]->DrawClone("hist");
+      }
+      else if ( iref==reference_values1.size()-1) {
+         templates[iref]->SetFillColorAlpha(kBlue,0.15);
+         templates[iref]->SetLineColor(kBlue+2);
+         templates[iref]->SetLineWidth(3);
+         templates[iref]->Draw("histsame");
+      }
+      else {
+         int color = iref+1;
+         if (color >= 10 ) color=(color-10)*2+28;
+         templates[iref]->SetLineColor(color);
+         //templates[iref]->SetFillColorAlpha(color,0.08);
+         templates[iref]->Draw("histsame");
+      }
+   }   
+   templates[0]->SetFillColorAlpha(kRed,0.15);
+   templates[0]->Draw("histsame");
+
+   data->SetMarkerStyle(20);
+   data->SetMarkerSize(1.4);
+   data->SetLineColor(kBlack);
+   data->Draw("e0same");
+
+   TheoFit->SetLineColor(923);
+   TheoFit->SetLineWidth(4);
+   TheoFit->SetLineStyle(2);
+   TheoFit->Draw("histsame");
+
+   TLegend legend(0.18,0.70,0.94,0.92,"","NDC");
+   legend.SetNColumns(3);
+   legend.SetFillStyle(0);
+   legend.SetBorderSize(0);
+   legend.AddEntry(data,"Data","E0P");
+   for ( int iref = 0 ; iref<reference_values1.size() ; iref++ ) {
+      legend.AddEntry(templates[iref],Form("Tpl. #alpha_{0}=%5.1f, #alpha_{1}=%3.1f",reference_values1[iref],reference_values2[iref]),"FL");
+   }
+   legend.AddEntry(TheoFit,"Estimated best model","L");
+   legend.Draw();
+
+   c1.Print(ps_name);
+   c1.Print("plots/LTF2D_plot.pdf");
+
+
+   // ---------------------------------------------- //
+   // print linear-functions in every bin
+   // ---------------------------------------------- //
+   c1.Clear();
+   c1.SetRightMargin(0.02);
+   c1.SetTopMargin(0.02);
+
+   c1.SetLeftMargin(0.12);
+   c1.SetBottomMargin(0.12);
+
+   for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
+      //TGraphErrors* data  = MakeTGraph(fit.ahat.row(0),fit.Dt.row(ibin));
+      TGraph2DErrors* gdata = new TGraph2DErrors();
+      gdata->SetPoint(0, fit.ahat(0), fit.ahat(1), fit.Dt(ibin));
+      gdata->SetPointError(0,0,0,data->GetBinError(ibin+1));
+      gdata->SetMarkerStyle(20);
+      gdata->SetMarkerSize(2);
+
+
+      TGraph2DErrors* graph = MakeTGraph2D(fit.M.col(1),fit.M.col(2),ibin,fit.Y,fit.SysY);
+      TF2* f2 = new TF2(Form("Linear Template Fit (2-dim., bin %d)",ibin),"[0]+[1]*x+[2]*y",
+                        xmin,xmax,ymin,ymax
+         );
+      graph->Fit(f2,"QW");
+
+
+
+      TGraph2D* gtheo = new TGraph2D();
+      gtheo->SetPoint(0, fit.ahat(0), fit.ahat(1), f2->Eval(fit.ahat(0), fit.ahat(1)));
+      gtheo->SetMarkerStyle(20);
+      gtheo->SetMarkerSize(0.4);
+      gtheo->SetMarkerColor(kBlack);
+      for ( int it = 0 ; it<fit.M.col(1).size(); it++ ) {
+         gtheo->SetPoint(it+1, reference_values1(it), reference_values2(it),
+                         f2->Eval(reference_values1(it), reference_values2(it)));
+      }
+
+      f2->SetLineColor(922);
+      f2->SetLineStyle(3);
+      f2->SetLineWidth(1);
+      f2->SetMinimum(0);
+      f2->Draw("");
+      f2->GetHistogram()->GetXaxis()->SetNdivisions(r1.size()+1);
+      f2->GetHistogram()->GetYaxis()->SetNdivisions(r2.size()+1);
+      f2->GetHistogram()->GetXaxis()->SetTitleOffset(2.2);
+      f2->GetHistogram()->GetYaxis()->SetTitleOffset(2.2);
+      f2->GetHistogram()->GetZaxis()->SetTitleOffset(1.8);
+      f2->GetHistogram()->SetTitle(";Reference value 0 (#alpha_{0}) [unit]  ;Reference value 1 (#alpha_{1}) [unit];Value [unit]");
+
+      graph->SetMarkerStyle(25);
+      //graph->SetMarkerSize(2);
+      graph->SetMarkerColor(kRed+2);
+      graph->SetLineColor(kRed+2);
+      graph->SetTitle(";Reference value (#alpha) [unit];Value [unit]");
+
+      //graph->SetMinimum(0);
+      //graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
+      //graph->Draw("ap");
+      //pol1w->Draw("Lsame");
+      //graph->GetFunction("pol1")->Draw("Lsame");
+      //graph->GetHistogram()->GetXaxis()->SetNdivisions(graph->GetN()+1);
+
+      f2->Draw("surf1");
+      gtheo->Draw("P0 same");
+      graph->Draw("err p0 same");
+      gdata->Draw("err P0 same");
+
+
+      TF2* f2leg = (TF2*)f2->Clone("f2leg");
+      f2leg->SetLineWidth(3);
+      gtheo->SetMarkerStyle(24);
+      gtheo->SetMarkerSize(0.4);
+      gdata->SetMarkerStyle(24);
+      graph->SetMarkerStyle(24);
+      if ( ibin==1 ) {
+         TLegend legend(0.42,0.18,0.80,0.43,"","NDC");
+         //legend.SetNColumns(3);
+         legend.SetFillStyle(0);
+         legend.SetBorderSize(0);
+         legend.SetTextSize(0.03);
+         legend.AddEntry(graph,"Templates","PE0");
+         legend.AddEntry(f2leg,"Linearized model","L");
+         legend.AddEntry(gtheo,"Projections onto model","P");
+         legend.AddEntry(gdata,"Data","E0P");
+         legend.DrawClone();
+      }
+
+      TLatex text;
+      text.SetNDC();
+      text.SetTextFont(42);
+      text.SetTextAlign(13);
+      text.SetTextSize(0.05);
+      //text.DrawLatex(0.75,0.25,Form("Bin %d",ibin));
+      text.DrawLatex(0.02,0.97,Form("Bin %d",ibin));
+
+      c1.Print(ps_name);
+      c1.Print( Form("plots/LTF2D_bin_%02d.pdf",ibin));
+      
+   }
+   
+   c1.Print( (string(ps_name)+"]").c_str() );
    
 }
 

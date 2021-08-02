@@ -31,6 +31,7 @@ root-slib:
 programs =  example_CMSinclusivejets_NN30_BRSSWpaper 
 programs += example_CMSinclusivejets_MSTW_CMSpaper
 programs += example_gaus_LTF
+programs += example_gaus2D_LTF
 bin: $(programs)
 
 $(programs): %: %.cxx
