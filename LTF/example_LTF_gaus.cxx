@@ -1,11 +1,32 @@
-//#include "include/LTF/LTF.h"
+/*
+  Copyright (c) 2021, D. Britzger, Max-Planck-Institute for Physics, Munich, Germany
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+
+  The Software is provided "as is", without warranty of any kind,
+  express or implied, including but not limited to the warranties of
+  merchantability, fitness for a particular purpose and
+  noninfringement. In no event shall the authors or copyright holders be
+  liable for any claim, damages or other liability, whether in an action
+  of contract, tort or otherwise, arising from, out of or in connection
+  with the Software or the use or other dealings in the Software.
+*/
+// -------------------------------------------------------------------- //
+
 #include "LTF/LTF.h"
 //#include "LTF_Tools.cxx"
-//#include "plot_LTF1D.cxx"
 #include "LTF_ROOTTools.h"
 
-#include <TH1D.h>
-#include <TGraphErrors.h>
+void PrintAsciiTable(const map<double,TH1D*>&, TH1D* data);
 
 // __________________________________________________________________________________ //
 // main
@@ -30,10 +51,10 @@ int example_LTF_gaus() {
    // ---  make templates
    // ------------------------------------------------ //
    map<double,TH1D*> templates;
-   { // make templates
       const int nEventsTemplates = 40000;
       const double sigma = 6;
       const vector<double> reference_values{169, 169.5, 170, 170.5, 171, 171.5, 172}; // template reference points
+   { // make templates
       //const vector<double> reference_values{170, 172}; // template reference points
       int seed = 1234;
       for ( double mean : reference_values ) {
@@ -42,6 +63,7 @@ int example_LTF_gaus() {
          templates[mean]->Scale(double(nEventsData)/nEventsTemplates);
       }
    }
+         
    
    // ------------------------------------------------ //
    // ---  generate pseudo-data
@@ -49,8 +71,9 @@ int example_LTF_gaus() {
    TH1D* data = LTF_ROOTTools::MakeHistogram(nEventsData, seeddata, meandata , sigmadata ,bins);
    data->SetLineColor(kBlack);
    data->SetMarkerSize(1.8);
-   
 
+   
+   PrintAsciiTable(templates,data);
 
    // ------------------------------------------------ //
    // ---  Do linear template fit
@@ -86,7 +109,26 @@ int example_LTF_gaus() {
 
 }
 
-
+//! ------------------------------------------------------------------------ //
+//! main function
 int main() {
    return example_LTF_gaus();
+}
+
+
+//! ------------------------------------------------------------------------ //
+//! --- write templates, and data, to ascii file
+void PrintAsciiTable(const map<double,TH1D*>& templates, TH1D* data){
+   cout<<endl;
+   printf(" %11s %11s",Form("Data"),Form("Stat"));
+   for ( auto [mean,hist] : templates ) 
+      printf(" %11s %11s",Form("Tmpl_%5.2f",mean),Form("Stat_%5.2f",mean));
+   cout<<endl;
+   for ( int i=1; i<=data->GetNbinsX() ;i++ ) {
+      printf(" %11.4f %11.4f",data->GetBinContent(i),data->GetBinError(i));
+   for ( auto [mean,hist] : templates ) 
+         printf(" %11.4f %11.4f",hist->GetBinContent(i),hist->GetBinError(i));
+      cout<<endl;
+   }
+   cout<<endl;
 }
