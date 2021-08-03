@@ -510,13 +510,11 @@ void plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins ){
    if ( M.cols() != 3 ) {cout<<"Error! only 2-dim plotting implemented."<<endl;exit(1);}
    Eigen::VectorXd reference_values1 = M.col(1);
    Eigen::VectorXd reference_values2 = M.col(2);
-   TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
-
 
    map<double,TH1D*> templates;
    set<double> r1,r2;
    for ( int iref = 0 ; iref<reference_values1.size() ; iref++ ) {
-      double ref = reference_values1(iref);
+      //double ref = reference_values1(iref);
       templates[iref] = MakeHistogram(fit.Y.col(iref),bins);
       r1.insert(reference_values1(iref));
       r2.insert(reference_values2(iref));
