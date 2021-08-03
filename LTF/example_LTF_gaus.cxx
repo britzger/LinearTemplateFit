@@ -22,8 +22,11 @@
 */
 // -------------------------------------------------------------------- //
 
+#include <iostream>
+
+#if defined __WITH_ROOT__ || defined __CLING__
+
 #include "LTF/LTF.h"
-//#include "LTF_Tools.cxx"
 #include "LTF_ROOTTools.h"
 
 void PrintAsciiTable(const map<double,TH1D*>&, TH1D* data);
@@ -109,12 +112,6 @@ int example_LTF_gaus() {
 
 }
 
-//! ------------------------------------------------------------------------ //
-//! main function
-int main() {
-   return example_LTF_gaus();
-}
-
 
 //! ------------------------------------------------------------------------ //
 //! --- write templates, and data, to ascii file
@@ -131,4 +128,20 @@ void PrintAsciiTable(const map<double,TH1D*>& templates, TH1D* data){
       cout<<endl;
    }
    cout<<endl;
+}
+
+#endif // end WITH_ROOT
+
+
+
+//! ------------------------------------------------------------------------ //
+//! main function
+int main() {
+#if defined __WITH_ROOT__ || defined __CLING__
+   return example_LTF_gaus();
+#else
+   //! printout if compiled without ROOT
+   std::cout<<"This example is working only if ROOT is available. Otherwise, please see 'example_LTF_gaus_NoROOT'."<<std::endl;
+   return 0;
+#endif
 }
