@@ -25,16 +25,20 @@
 #include <iostream>
 
 #if defined __WITH_ROOT__ || defined __CLING__
-
 #include "LTF/LTF.h"
 #include "LTF_ROOTTools.h"
+#include <TH1D.h>
+#include <string>
 
-void PrintAsciiTable(const map<double,TH1D*>&, TH1D* data);
+using namespace std;
+
+
+void PrintAsciiTable(const map<vector<double>,TH1D*>& templates, TH1D* data);
+
 
 // __________________________________________________________________________________ //
-// main
-int example_LTF_gaus() {
-   using namespace std;
+//! main
+int example2_LTF_gaus2D() {
 
    gStyle->SetOptStat(0);
    gSystem->Load("libLTF.so");
@@ -45,6 +49,7 @@ int example_LTF_gaus() {
    //const vector<double> bins{162, 163, 164, 165, 166,167, 168,169, 170, 171, 172,173, 174, 175, 176, 177, 178};
    const vector<double> bins{169,170,171,172,173, 174, 175, 176, 177, 178,179,180,181,182,183};
 
+
    const double sigmadata      = 6.2;
    const double meandata       = 170.2;
    const int nEventsData       = 500;
@@ -53,38 +58,45 @@ int example_LTF_gaus() {
    // ------------------------------------------------ //
    // ---  make templates
    // ------------------------------------------------ //
-   map<double,TH1D*> templates;
-      const int nEventsTemplates = 40000;
-      const double sigma = 6;
-      const vector<double> reference_values{169, 169.5, 170, 170.5, 171, 171.5, 172}; // template reference points
+   map<vector<double>,TH1D*> templates;
+
    { // make templates
+      const int nEventsTemplates = 40000;
+      //const double sigma = 6;
+      const vector<double> reference_values1{169.5, 170, 170.5, 171}; // template reference points
+      const vector<double> reference_values2{5.8, 6.0, 6.2, 6.4}; // template reference points
+      const set<double>    central_values{170,170.5,6.0,6.2 }; // drop 'extreme' 2D points
       //const vector<double> reference_values{170, 172}; // template reference points
       int seed = 1234;
-      for ( double mean : reference_values ) {
-         templates[mean] = LTF_ROOTTools::MakeHistogram(nEventsTemplates, seed++, mean , sigma ,bins);
-         templates[mean]->SetTitle(Form("m = %.1f",mean));
-         templates[mean]->Scale(double(nEventsData)/nEventsTemplates);
+      for ( double mean : reference_values1 ) {
+         for ( double sigm : reference_values2 ) {
+            if ( central_values.find(mean) != central_values.end() || central_values.find(sigm) != central_values.end() ) {
+               templates[{mean,sigm}] = LTF_ROOTTools::MakeHistogram(nEventsTemplates, seed++, mean , sigm ,bins);
+               templates[{mean,sigm}]->SetTitle(Form("m = %.1f",mean));
+               templates[{mean,sigm}]->Scale(double(nEventsData)/nEventsTemplates);
+            }
+         }
       }
    }
-         
    
    // ------------------------------------------------ //
    // ---  generate pseudo-data
    // ------------------------------------------------ //
-   TH1D* data = LTF_ROOTTools::MakeHistogram(nEventsData, seeddata, meandata , sigmadata ,bins);
-   data->SetLineColor(kBlack);
-   data->SetMarkerSize(1.8);
+   for ( int ii = 0 ; ii<1 ; ii++ ) 
+   {
 
-   
-   PrintAsciiTable(templates,data);
+      TH1D* data = LTF_ROOTTools::MakeHistogram(nEventsData, seeddata+ii, meandata , sigmadata ,bins);
+
+      PrintAsciiTable(templates,data);
 
    // ------------------------------------------------ //
    // ---  Do linear template fit
    // ------------------------------------------------ //
+
    // --- instantiate LTF object
    LTF ltf;
-   ltf.SetGamma(vector<double>{1});
-   ltf.UseNuisanceParameters(false);
+   ltf.SetGamma(vector<double>{1,1});
+   ltf.UseNuisanceParameters(true);
    ltf.UseLogNormalUncertainties(false);
 
    // --- initialize templates
@@ -99,49 +111,90 @@ int example_LTF_gaus() {
    // for ( const auto& s : shiftsnuisance ) ltf.AddError("",N,s->GetArray()+1,1.);
    // for ( const auto& s : shifts ) ltf.AddError("",N,s->GetArray()+1,1.);
    // for ( const auto& s : shifts ) ltf.AddError("",N,s->GetArray()+1,0.5,LTF::Uncertainty::External);
-   
 
-   LTF::LiTeFit fit = ltf.DoLiTeFit();
-   fit.PrintFull();
-   //fit.DoIterativeFitNewton(6,0.6,2,1);
-   //fit.DoIterativeFitTaylor();
-   //fit.PrintFull();
-   LTF_ROOTTools::plotLiTeFit(fit,bins);
+   TH1D* normerr = (TH1D*)data->Clone("normerr"); 
+   normerr->Scale(0.1);
+   // ltf.AddError("normaelisation", bins.size()-1,normerr->GetArray()+1 , 1., LTF::Uncertainty::Constrained);
+   // ltf.AddError("nordmalisation", bins.size()-1,normerr->GetArray()+1 , 1., LTF::Uncertainty::Constrained);
+   // ltf.AddError("nfdormalisation", bins.size()-1,normerr->GetArray()+1 , 1., LTF::Uncertainty::Constrained);
+   // ltf.AddError("normalisation", bins.size()-1,normerr->GetArray()+1 , 1., LTF::Uncertainty::Constrained);
+
+
+   LTF::LiTeFit fit2 = ltf.DoIterativeFitNewton(2,2,1);
+   //LTF::LiTeFit fit2 = ltf.DoLiTeFit();
+   fit2.PrintFull();
+
+   // fit2.DoIterativeFitNewton() ;
+
+   // LTF::LiTeFit fit2 = ltf.DoLiTeFit();
+   // fit2.PrintFull();
+   // fit2.DoIterativeFitNewton() ;
+
+   // LTF::LiTeFit fit2 = ltf.DoLiTeFit();
+   // fit2.DoIterativeFit(6,0.6,2,0);
+   // fit2.PrintFull();
+
+   // fit2.DoIterativeFit(6,0.6,2,1);
+   //fit2.PrintFull();
+
+
+   // LTF::LiTeFit fit = ltf.DoLiTeFit();
+   // //fit.PrintFull();
+   // Eigen::VectorXd ahat = fit.ahat;
+   // for ( int kk = 0 ; kk<4 ; kk++ ) {
+   //    //ahat = (fit.SolveLinearTemplateFit(2,1,ahat) - ahat)*0.6+ahat;
+   //    fit.DoLiTeFit(2,1,ahat);
+   //    ahat = (fit.ahat - ahat)*0.6+ahat;
+   //    cout<<"kk: "<<kk<<endl<<ahat<<endl;
+   // }
+
+   // if ( ii==0 ) {
+   //    fit.PrintFull();
+   //    //
+   LTF_ROOTTools::plotLiTeFit_2D(fit2,bins);
+   // }
+   // else {
+   //    fit.PrintShort();
+   // }
+
+   }
+
    
    return 0;
-
+  
 }
+
 
 
 //! ------------------------------------------------------------------------ //
 //! --- write templates, and data, to ascii file
-void PrintAsciiTable(const map<double,TH1D*>& templates, TH1D* data){
+void PrintAsciiTable(const map<vector<double>,TH1D*>& templates, TH1D* data){
    cout<<endl;
    printf(" %11s %11s",Form("Data"),Form("Stat"));
-   for ( auto [mean,hist] : templates ) 
-      printf(" %11s %11s",Form("Tmpl_%5.2f",mean),Form("Stat_%5.2f",mean));
+   for ( auto [refs,hist] : templates )
+      printf(" %11s %11s",Form("T_%5.1f_%3.1f",refs[0],refs[1]),
+             Form("S_%5.1f_%3.1f",refs[0],refs[1]));
    cout<<endl;
    for ( int i=1; i<=data->GetNbinsX() ;i++ ) {
       printf(" %11.4f %11.4f",data->GetBinContent(i),data->GetBinError(i));
-   for ( auto [mean,hist] : templates ) 
+      for ( auto [refs,hist] : templates )
          printf(" %11.4f %11.4f",hist->GetBinContent(i),hist->GetBinError(i));
       cout<<endl;
    }
    cout<<endl;
 }
-
 #endif // end WITH_ROOT
-
 
 
 //! ------------------------------------------------------------------------ //
 //! main function
 int main() {
 #if defined __WITH_ROOT__ || defined __CLING__
-   return example_LTF_gaus();
+   return example2_LTF_gaus2D();
 #else
    //! printout if compiled without ROOT
-   std::cout<<"This example is working only if ROOT is available. Otherwise, please see 'example_LTF_gaus_NoROOT'."<<std::endl;
+   std::cout<<"This example is working only if ROOT is available. Otherwise, please see 'example2_LTF_gaus2D_NoROOT'."<<std::endl;
    return 0;
 #endif
 }
+

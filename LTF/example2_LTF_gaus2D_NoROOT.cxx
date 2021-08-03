@@ -34,7 +34,7 @@ using namespace std;
 
 // __________________________________________________________________________________ //
 //! main
-int example_LTF_gaus2D_NoROOT() {
+int example2_LTF_gaus2D_NoROOT() {
 
 #if defined __WITH_ROOT__ || defined __CLING__
    gSystem->Load("libLTF.so");
@@ -55,7 +55,7 @@ int example_LTF_gaus2D_NoROOT() {
    const vector<double> reference_values2{5.8, 6.0, 6.2, 6.4}; // template reference points
    const set<double>    central_values{170,170.5,6.0,6.2 }; // drop 'extreme' 2D points   
 
-   map < string, vector<double> > templates   = LTF_Tools::read_input_table("data/example_LTF_gaus2D.txt",26);
+   map < string, vector<double> > templates   = LTF_Tools::read_input_table("data/example2_LTF_gaus2D.txt",26);
    for ( double mean : reference_values1 ) {
       for ( double sigm : reference_values2 ) {
          if ( central_values.find(mean) != central_values.end() || central_values.find(sigm) != central_values.end() ) {
@@ -129,6 +129,6 @@ int example_LTF_gaus2D_NoROOT() {
 //! ------------------------------------------------------------------------ //
 //! main function
 int main() {
-   return example_LTF_gaus2D_NoROOT();
+   return example2_LTF_gaus2D_NoROOT();
 }
 

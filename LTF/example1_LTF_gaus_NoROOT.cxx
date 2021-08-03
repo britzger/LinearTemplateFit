@@ -40,7 +40,7 @@
 //!
 //! More details are given in the paper.
 //!
-int example_LTF_gaus_NoROOT() {
+int example1_LTF_gaus_NoROOT() {
    using namespace std;
 #if defined __WITH_ROOT__ || defined __CLING__
    gSystem->Load("libLTF.so");
@@ -86,6 +86,6 @@ int example_LTF_gaus_NoROOT() {
 //! ------------------------------------------------------------------------ //
 //! main function
 int main() {
-   return example_LTF_gaus_NoROOT();
+   return example1_LTF_gaus_NoROOT();
 }
 
