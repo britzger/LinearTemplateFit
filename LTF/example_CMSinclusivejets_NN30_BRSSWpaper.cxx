@@ -27,10 +27,10 @@
 #include <fstream>
 
 #include "LTF/LTF.h"
-#include "LTF_Tools.cxx"
+#include "LTF_Tools.h"
 
 #if defined __WITH_ROOT__ || defined __CLING__
-#include "plot_LTF1D.cxx"
+#include "LTF_ROOTTools.h"
 #endif
 
 
@@ -153,7 +153,7 @@ int example_CMSinclusivejets_NN30_BRSSWpaper() {
 #if defined __WITH_ROOT__ || defined __CLING__
    vector<double> bins;
    for ( int i = 0; i<data.size()+1; i++ ) bins.push_back(i); // dummy binning for the plotting function
-   plotLiTeFit(fit,bins,"d^{2}#sigma_{jet}/dp_{T}d|y| [pb/GeV]","Reference value:  #alpha_{s}(M_{Z})","Bin");//, const vector<double> bins)
+   LTF_ROOTTools::plotLiTeFit(fit,bins,"d^{2}#sigma_{jet}/dp_{T}d|y| [pb/GeV]","Reference value:  #alpha_{s}(M_{Z})","Bin");//, const vector<double> bins)
 #endif
    return 0;
 }

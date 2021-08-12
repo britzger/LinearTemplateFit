@@ -34,10 +34,11 @@ programs += example1_LTF_gaus
 programs += example1_LTF_gaus_NoROOT
 programs += example2_LTF_gaus2D
 programs += example2_LTF_gaus2D_NoROOT
+programs += example3_LTF_gaus_sigma
 bin: $(programs)
 
 $(programs): %: %.cxx
-	$(CXX) -o $@ $< -O2 -g -Wall -Wno-sign-compare -std=gnu++17 -I. -L. -lLTF -lstdc++ $(WITH_ROOT) 
+	$(CXX) -o $@ $< -O0 -g -Wall -Wno-sign-compare -std=gnu++17 -I. -L. -lLTF -lstdc++ $(WITH_ROOT) 
 
 
 ###########################################################

@@ -1,5 +1,5 @@
 /*
-  Copyright 2021, D. Britzger, Max-Planck-Institute for Physics, Munich, Germany
+  Copyright (c) 2021, D. Britzger, Max-Planck-Institute for Physics, Munich, Germany
   
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
@@ -1893,7 +1893,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
                if ( corr == 1 )   // correlated
                   DeltaSysY[name]  +=  dYijDYij; 
                else {             // uncorrelated (apply sqrt below!)
-                  for ( size_t kk = 0 ; kk<nPar ; kk++ ) {
+                  for ( int kk = 0 ; kk<nPar ; kk++ ) {
                      DeltaSysY[name](kk)  +=  dYijDYij(kk,0) * dYijDYij(kk,0); // coefficient wise pow(2);
                   }
                }
@@ -1939,7 +1939,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
                if ( corr == 1 )   // correlated
                   DeltaSysA[name]  +=  dAitDAit; 
                else {             // uncorrelated (apply sqrt below!)
-                  for ( size_t kk = 0 ; kk<nPar ; kk++ ) {
+                  for ( int kk = 0 ; kk<nPar ; kk++ ) {
                      DeltaSysA[name](kk)  +=  dAitDAit(kk,0) * dAitDAit(kk,0); // coefficient wise pow(2);
                   }
                }
@@ -1993,7 +1993,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
             }
          }
          if ( corr == 0 ) {
-            for ( size_t kk = 0 ; kk<nPar ; kk++ ) {
+            for ( int kk = 0 ; kk<nPar ; kk++ ) {
                DeltaSysA[name](kk)  +=  dSysAtmp(kk,0) * dSysAtmp(kk,0); // coefficient wise pow(2);
             }
          }

@@ -319,13 +319,17 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
       if ( fit.Gamma[0]!=1 )   cout<<"Warning! Plotting with gamma factor !=1 not correctly implmeneted!"<<endl;
 
       graph->GetFunction("pol1")->SetLineWidth(3);
+      
+      graph->Fit("pol2","QW");
+      graph->GetFunction("pol2")->SetLineWidth(83);
+
       graph->SetMarkerStyle(47);
       graph->SetMarkerColor(kRed+2);
       graph->SetLineColor(kRed+2);
       if ( fit.GetLogNormal() ) 
          graph->SetTitle((";"+referencename+";log("+yaxistitle+")").c_str()); // log(value/unit)
       else
-         graph->SetTitle((";"+referencename+";"+yaxistitle+")").c_str());
+         graph->SetTitle((";"+referencename+";"+yaxistitle).c_str());
 
 
       TF1* f1log = NULL;
@@ -357,6 +361,7 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
          graph->SetMinimum(0);
 
       graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
+
       graph->Draw("ap");
       if ( fit.GetLogNormal() )
          f1log->Draw("Lsame");
@@ -370,7 +375,6 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
       //f2->Draw("same");
 
       gdata->Draw("P");
-      gdata->Print("all");
       
       if ( ibin==0 ) {
          double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
@@ -500,10 +504,6 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
 //!  since this is not included in LTF::LiTeFit
 //! 
 static
-
-
-// __________________________________________________________________________________ //
-// plot a LiTeFit object
 void plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins ){
 
    auto& M = fit.M;
@@ -704,6 +704,360 @@ void plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins ){
    c1.Print( (string(ps_name)+"]").c_str() );
    
 }
+
+
+
+
+
+
+// __________________________________________________________________________________ //
+//!
+//!
+//!  Plot a LiTeFit object using ROOT
+//!
+//!  The binning needs to be provided to the plotting function,
+//!  since this is not included in LTF::LiTeFit
+//! 
+static
+void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins, 
+                 const string& yaxistitle    = "value [unit]",
+                 const string& referencename = "Reference value (#alpha) [unit]",
+                 const string& observablename = "Observable [unit]"
+   ) {
+   gStyle->SetOptStat(0);
+   gSystem->mkdir("plots");
+   auto& M = fit.M;
+   
+   // sanity check
+   if ( M.cols() != 2 ) {cout<<"Error! only 1-dim plotting implemented."<<endl;exit(1);}
+   Eigen::VectorXd reference_values = M.col(1);
+   //TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
+   
+   map<double,TH1D*> templates;
+   for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
+      //double ref = reference_values(iref);
+      templates[iref] = MakeHistogram(fit.Y.col(iref),bins);
+   }
+
+   TH1D* data    = MakeHistogram(fit.Dt,bins,fit.Vs);
+   TH1D* TheoFit = MakeHistogram(fit.TheoFit,bins);
+   
+   TCanvas c1("c1","LTF plots",800,800);
+   c1.SetRightMargin(0.05);
+   c1.SetLeftMargin(0.15);
+   c1.SetTopMargin(0.08);
+   // c1.SetRightMargin(0.02);
+
+   const char* ps_name = fit.GetLogNormal() ?
+      "LTFlog_plots.ps" :
+      "LTF_plots.ps";
+   c1.Print( (string(ps_name)+"[").c_str() );
+
+   // ---------------------------------------------- //
+   // main plot
+   // ---------------------------------------------- //
+   for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
+      templates[iref]->SetLineWidth(2);
+      if ( iref == 0 ) {
+         templates[0]->SetTitle(("Linear Template Fit;"+observablename+";"+yaxistitle).c_str());
+         templates[0]->SetLineColor(kRed+1);
+         if ( templates[0]->GetMaximum()>0 )templates[0]->SetMinimum(0);
+         if ( !fit.GetLogNormal() ) 
+            templates[0]->SetMaximum(templates[0]->GetMaximum()*1.7);
+         // else 
+         //    templates[0]->SetMaximum(templates[0]->GetMaximum()*3.); 
+         templates[0]->SetLineWidth(3);
+         templates[0]->DrawClone("hist");
+      }
+      else if ( iref==reference_values.size()-1) {
+         if ( templates[0]->GetMaximum()>0 ) templates[iref]->SetFillColorAlpha(kBlue,0.15);
+         templates[iref]->SetLineColor(kBlue+2);
+         templates[iref]->SetLineWidth(3);
+         templates[iref]->Draw("histsame");
+      }
+      else {
+         templates[iref]->SetLineColor(iref+2);
+         templates[iref]->SetLineWidth(2);
+         templates[iref]->Draw("histsame");
+      }
+   }   
+   if ( templates[0]->GetMaximum()>0 )templates[0]->SetFillColorAlpha(kRed,0.15);
+   templates[0]->Draw("histsame");
+
+   data->SetMarkerStyle(20);
+   data->SetMarkerSize(1.4);
+   data->SetLineColor(kBlack);
+   data->Draw("e0same");
+
+   TheoFit->SetLineColor(923);
+   TheoFit->SetLineWidth(4);
+   TheoFit->SetLineStyle(2);
+   TheoFit->Draw("histsame");
+
+   TLegend legend(0.18,0.70,0.94,0.92,"","NDC");
+   legend.SetNColumns(3);
+   legend.SetFillStyle(0);
+   legend.SetBorderSize(0);
+   legend.AddEntry(data,"Data","E0P");
+   for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
+      legend.AddEntry(templates[iref],Form("Template #alpha=%6.2f",reference_values[iref]),"FL");
+   }
+   legend.AddEntry(TheoFit,"Estimated best model","L");
+   legend.Draw();
+
+   c1.Print(ps_name);
+   c1.Print("plots/LTF_plot.pdf");
+
+
+   // ---------------------------------------------- //
+   // print linear-functions in every bin
+   // ---------------------------------------------- //
+   c1.Clear();
+   c1.SetRightMargin(0.02);
+   c1.SetTopMargin(0.02);
+   c1.SetLeftMargin(0.16);
+   c1.SetBottomMargin(0.16);
+
+   gPad->SetTicky(1);
+
+   gStyle->SetLabelSize(0.05,"XYZ");
+   gStyle->SetTitleSize(0.05,"XYZ");
+   gStyle->SetTitleOffset(1.1,"X");
+   gStyle->SetTitleOffset(1.6,"Y");
+   gStyle->SetMarkerSize(2);
+
+
+   map < string, vector<double> > input_table = read_input_table2("data/CMS_data.txt",32);
+
+   for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
+   //for ( int ibin = 0 ; ibin<0 ; ibin++ ) {
+   //for ( int ibin = 0 ; ibin<6 ; ibin++ ) {
+      //TGraphErrors* data  = MakeTGraph(fit.ahat.row(0),fit.Dt.row(ibin));
+      TGraphErrors* gdata = new TGraphErrors();
+      gdata->SetPoint(0,fit.ahat(0),fit.Dt(ibin));
+      gdata->SetPointError(0,0,data->GetBinError(ibin+1));
+      gdata->SetMarkerStyle(20);
+
+      TGraphErrors* graph = MakeTGraph(fit.M.col(1),ibin,fit.Y,fit.SysY);
+      graph->Fit("pol1","QW"); // in this function it is "QW" (unweighted
+      TF1* pol1 = (TF1*)graph->GetFunction("pol1")->Clone("pol1");
+      pol1->SetLineColor(kRed);
+      //pol1w->SetLineStyle(3);
+      pol1->SetLineWidth(2);
+
+      TF1* f2= new TF1("f2","[0]+[1]*pow(x,2)", -FLT_MIN,FLT_MAX );
+      graph->Fit(f2,"QW");
+      TF1* f1= new TF1("f1","[0]+[1]*pow(x,[2])", -FLT_MIN,FLT_MAX );
+      
+
+      graph->Fit("pol1","QW"); // "W": Ignore all point errors when fitting a TGraphErrors 
+      bool UseLTFOutput = true;
+      if ( UseLTFOutput ) {
+         Eigen::VectorXd ltfpol1param =(fit.Y*fit.Mc().transpose()).row(ibin);
+         //cout<<"M+*Y:"<<endl<< ltfpol1param <<endl;
+         graph->GetFunction("pol1")->SetParameter(0,ltfpol1param(0));
+         graph->GetFunction("pol1")->SetParameter(1,ltfpol1param(1));
+         f1->SetParameter(0,ltfpol1param(0));
+         f1->SetParameter(1,ltfpol1param(1));
+         f1->SetParameter(2,fit.Gamma[0]);
+      }
+      if ( fit.Gamma[0]!=1 )   cout<<"Warning! Plotting with gamma factor !=1 not correctly implmeneted!"<<endl;
+
+      graph->GetFunction("pol1")->SetLineWidth(3);
+      
+      graph->Fit("pol2","QW");
+      graph->GetFunction("pol2")->SetLineWidth(83);
+
+      graph->SetMarkerStyle(47);
+      graph->SetMarkerColor(kRed+2);
+      graph->SetLineColor(kRed+2);
+      if ( fit.GetLogNormal() ) 
+         graph->SetTitle((";"+referencename+";log("+yaxistitle+")").c_str()); // log(value/unit)
+      else
+         graph->SetTitle((";"+referencename+";"+yaxistitle).c_str());
+
+
+      TF1* f1log = NULL;
+      if ( fit.GetLogNormal() ) {
+         //f1log = new TF1("pol1log","[0]+[1]*exp(x)", -FLT_MIN,FLT_MAX );
+         f1log = new TF1("pol1log","log([0]+[1]*pow(x,1))", -FLT_MIN,FLT_MAX );
+
+         TGraph* gexp = new TGraph();
+         for ( int i = 0 ; i<graph->GetN() ; i++ ) 
+            gexp->SetPoint(i,graph->GetX()[i], exp(graph->GetY()[i]));
+         gexp->Fit("pol1","QW");
+
+         Eigen::VectorXd ltfpol1param =(fit.Y*fit.Mc().transpose()).row(ibin);
+         graph->GetFunction("pol1")->SetParameter(0,ltfpol1param(0));
+
+         f1log->SetParameter(0, gexp->GetFunction("pol1")->GetParameter(0));
+         f1log->SetParameter(1, gexp->GetFunction("pol1")->GetParameter(1));
+         if ( fit.Gamma[0]!=1 )   cout<<"Warning! Plotting with gamma factor !=1 not correctly implmeneted!"<<endl;
+
+         // //f1 = new TF1("pol1","[0]+[1]*x", -FLT_MIN,FLT_MAX );
+         // graph->Fit(f1log,"QW"); // "W": Ignore all point errors when fitting a TGraphErrors 
+         f1log->SetLineColor(kBlue+1);
+         f1log->SetLineStyle(7);
+         f1log->SetLineWidth(2);
+      }
+
+
+      if ( gdata->GetY()[0] > 0 )
+         graph->SetMinimum(0);
+
+      graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
+      graph->Fit("pol2","QW");
+      graph->GetFunction("pol2")->SetLineColor(kBlue);;
+
+      TF1* tang = new TF1("tang","[0]+[1]*x", -FLT_MIN,FLT_MAX );
+      double f0  = graph->GetFunction("pol2")->Eval(gdata->GetX()[0]);
+      double fp0 = graph->GetFunction("pol2")->GetParameter(1) + 2.*graph->GetFunction("pol2")->GetParameter(2)*gdata->GetX()[0];
+      tang->SetParameter(0, f0 - fp0*gdata->GetX()[0] );
+      tang->SetParameter(1, fp0);
+      tang->SetLineWidth(2);
+      tang->SetLineColor(kTeal+4);
+      tang->SetLineStyle(7);
+      
+      pol1->SetLineStyle(3);
+      graph->Draw("ap");
+      if ( fit.GetLogNormal() )
+         f1log->Draw("Lsame");
+      else
+         pol1->Draw("Lsame");
+      //graph->GetFunction("pol1")->Draw("Lsame");
+      if ( reference_values.size()+1<= 8 ) 
+         graph->GetHistogram()->GetXaxis()->SetNdivisions(graph->GetN()+1);
+      else
+         graph->GetHistogram()->GetXaxis()->SetNdivisions(int(graph->GetN()/2)+1+200);
+      //f2->Draw("same");
+
+      tang->Draw("Lsame");
+      gdata->Draw("P");
+      
+      if ( ibin==0 ) {
+         double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
+         //TLegend legend(xmin,0.19,0.96,0.47,"","NDC");
+         TLegend legend(0.19,0.19,0.56,0.47,"","NDC"); 
+         //legend.SetNColumns(3);
+         legend.SetFillStyle(0);
+         legend.SetBorderSize(0);
+         legend.SetTextSize(0.045);
+         legend.AddEntry(data,"Data","E0P");
+         legend.AddEntry(graph,"Templates","PE0");
+         if ( fit.GetLogNormal() ) {
+            legend.AddEntry(graph->GetFunction("pol1"),"Linear log(model)","L");
+            legend.AddEntry(f1log,"#scale[0.9]{Linearized model #scale[0.7]{(unused)}}","L");
+         }
+         else {
+            legend.AddEntry(graph->GetFunction("pol2"),"Second-order model","L");
+            legend.AddEntry(tang,"Linear model","L");
+            legend.AddEntry(pol1,"Linear Template Fit","L");
+         }
+         legend.DrawClone();
+      }
+
+      TLatex text;
+      text.SetNDC();
+      text.SetTextFont(42);
+      text.SetTextAlign(11);
+      text.SetTextSize(0.045);
+      //text.DrawLatex(0.20,0.20,Form("Bin %d",ibin));
+
+      text.SetTextAlign(31);
+      text.DrawLatex(0.955,0.20,Form("Bin %d",ibin));
+
+      // text.DrawLatex(0.20,0.30,"CMS inclusive jets");
+      // text.SetTextSize(0.04);
+      // text.DrawLatex(0.20,0.25,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
+      // text.DrawLatex(0.20,0.20,Form("%3.0f_{ }<_{ }p_{T}_{ }<_{ }%3.0f_{ }GeV",input_table["ptlow"][ibin],input_table["pthigh"][ibin]));
+      
+      // text.SetTextSize(0.04);
+      // text.DrawLatex(0.20,0.93,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
+      // text.DrawLatex(0.20,0.88,Form("%3.0f_{ }<_{ }p_{T}_{ }<_{ }%3.0f_{ }GeV",input_table["ptlow"][ibin],input_table["pthigh"][ibin]));
+
+      cout<<input_table["ylow"][ibin]<<"\t"
+          <<input_table["yhigh"][ibin]<<"\t"
+          <<input_table["ptlow"][ibin]<<"\t"
+          <<input_table["pthigh"][ibin]<<endl;
+
+      c1.Print(ps_name);
+      if ( fit.GetLogNormal() )
+         c1.Print( Form("plots/LTFlog_bin_%02d.pdf",ibin));
+      else
+         c1.Print( Form("plots/LTF_bin_%02d.pdf",ibin));
+      
+   }
+   
+
+   // ---------------------------------------------- //
+   //   chisq plot
+   // ---------------------------------------------- //
+    TGraph* gChi2 = new TGraph();
+    int ndf = (fit.Dt.rows()-(fit.M.cols()-1));
+    for ( int itmpl = 0 ; itmpl<fit.chisq_y.size() ; itmpl++ )  {
+       gChi2->SetPoint(itmpl, reference_values[itmpl], fit.chisq_y(itmpl)/ndf);
+    }
+    gChi2->Fit("pol2","QW");
+    gChi2->SetMarkerStyle(20);
+    
+    TGraph* gChi2LTF = new TGraph();
+    gChi2LTF->SetPoint(0, fit.ahat(0), fit.chisq/ndf);
+    gChi2LTF->SetMarkerStyle(29);
+    gChi2LTF->SetMarkerSize(3.1);
+    gChi2LTF->SetMarkerColor(kViolet+2);
+
+    TGraph* gChi2chk = new TGraph();
+    gChi2chk->SetPoint(0, fit.achk(0), fit.achk_chisq/ndf);
+    gChi2chk->SetMarkerSize(2.2);
+    gChi2chk->SetMarkerStyle(24);
+    gChi2chk->SetMarkerColor(kRed);
+    
+    //gChi2LTF->Print("all");
+    
+    //gChi2->SetTitle(";#alpha_{0} [unit];#chi^{2}/ndf");
+    gChi2->SetTitle((";"+referencename+";#chi^{2}/ndf").c_str());
+    gChi2->SetMinimum(0.);
+    gChi2->SetMaximum(20.2);
+    gChi2->Draw("apc");
+    if ( reference_values.size()+1<= 8 ) 
+       gChi2->GetHistogram()->SetNdivisions(reference_values.size()+1+500,"X");
+    else
+       gChi2->GetHistogram()->SetNdivisions(int(reference_values.size()/2)+1+500,"X");
+    
+    TLine line;
+    line.SetLineColor(920);
+    line.SetLineStyle(3);
+    line.DrawLine( 
+       gChi2->GetHistogram()->GetXaxis()->GetXmin(),1.,
+       gChi2->GetHistogram()->GetXaxis()->GetXmax(), 1);
+
+    line.DrawLine( 
+       fit.achk_chisq/ndf+1,1.,
+       fit.achk_chisq/ndf+1,1.);
+
+    gChi2chk->Draw("Psame");
+    gChi2LTF->Draw("Psame");
+
+    {
+       TLegend legend(0.18,0.75,0.56,0.97,"","NDC");
+       //legend.SetNColumns(3);
+       legend.SetFillStyle(0);
+       legend.SetBorderSize(0);
+       legend.SetTextSize(0.045);
+       legend.AddEntry(gChi2LTF,"#hat#chi^{2} of the iterative template fit","P");
+       legend.AddEntry(gChi2,   "#chi^{2}_{#font[12]{j}} of the individual templates","PL");
+       legend.AddEntry(gChi2->GetFunction("pol2"),"Parabola","L");
+       //legend.AddEntry(gChi2chk,"Minimum of #chi^{2} parabola #scale[0.8]{(#check#chi^{2})}","P"); //  (#check#chi^{2})
+       legend.DrawClone();
+    }
+       
+    c1.Print(ps_name);
+    c1.Print( "plots/LTF_chi2.pdf");
+
+    c1.Print( (string(ps_name)+"]").c_str() );
+   
+}
+
 
 
 };
