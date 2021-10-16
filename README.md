@@ -129,10 +129,11 @@ A  macro to obtain some plots with ROOT is available in `plot_LTF1D.cxx`.
 Though, the plotting routines are certainly not well developed or maintained, but may still serve as an example or for quick studies.
 The interface functions are:
 ```
- void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
-                 const string& yaxistitle    = "value [unit]",
-                 const string& referencename = "Reference value (#alpha) [unit]",
-                 const string& observablename = "Observable [unit]"
+ void plotLiTeFit(const LTF::LiTeFit& fit,
+                  const vector<double>& bins,
+                  const string& yaxistitle     = "value [unit]",
+                  const string& referencename  = "Reference value (#alpha) [unit]",
+                  const string& observablename = "Observable [unit]"
 ```
 
 
