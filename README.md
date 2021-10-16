@@ -1,14 +1,16 @@
 # The Linear Template Fit: `LTF'  
 
-The linear template fit is an analytic expression for the best estimator of a least-square optimization problem
-and may become useful for a wide variety of fitting problems. More details are provided in arXiv:2108.XXXXX.
+The *Linear Template Fit* is an analytic expression for parameter estimation which combines the statistical measure with its optimization.
+It may be useful for a wide variety of fitting problems. More details are provided in arXiv:2108.XXXXX.
 
-The *Linear Template Fit* is implemented in `C++` using the [Eigen](https://eigen.tuxfamily.org) package for linear algebra.
+The Linear Template Fit is implemented in `C++` using the [Eigen](https://eigen.tuxfamily.org) package for linear algebra.
 Some examples make use of the [ROOT](https://root.cern) analysis framework.
 An interactive usability is given through ROOT's [CLING](https://root.cern/cling) LLVM-interpreter for C++ (see below).
 
 
-If you prefer python, julia, go, awk, or any other language or build-tool, please provide us your implementation or the wrapper.
+If you prefer python, julia, go, awk, or any other language or build-tool, please send me your implementation or the wrapper.
+Furthermore, a direct implementation in the ROOT package would be appreciated.
+
 
 # Links
 The pre-print can be downloaded at: arXiv:2108.XXXXX
@@ -22,6 +24,9 @@ Possible further documentation: www.mpp.mpg.de/~britzger/LinearTemplateFit](http
 
 
 # The LTF package
+
+A doxygen code documentation is at: [mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/)
+
 
 ## Package structure
 The main class of the Linear Template Fit is named `LTF`, and the fit returns a small helper class `LTF::LiTeFit`.
