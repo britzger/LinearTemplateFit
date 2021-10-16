@@ -123,8 +123,21 @@ make example_CMSinclusivejets_NN30_BRSSWpaper
 make example_CMSinclusivejets_MSTW_CMSpaper
 ```
 
-# Plots
+# Helper functions
+Some helper functions are available to read files or for basic plotting:
+```
+LTF_Tools.h
+LTF_ROOTTools.h
+plot_LTF1D.cxx
+```
 
+## Tools
+The tools are documented under
+https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/classLTF__ROOTTools.html
+https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/classLTF__Tools.html
+
+
+## Plots
 A  macro to obtain some plots with ROOT is available in `plot_LTF1D.cxx`.
 Though, the plotting routines are certainly not well developed or maintained, but may still serve as an example or for quick studies.
 The interface functions are:
