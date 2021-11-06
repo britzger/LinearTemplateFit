@@ -225,6 +225,7 @@ void LTF::SetLiTeFitInput() {
    fLTF.SysA        = fSysA; // uncertainty of response matrix A, dA
    fLTF.corrSys     = fcorrSys; // correlation coefficients of dY, dA
 
+
    // request log-normal uncertainties
    if ( fUseLog ) 
       fLTF.ApplyLogNormalDistribution();
@@ -250,9 +251,16 @@ void LTF::SetLiTeFitInput() {
    fLTF.Dt    = fLTF.Dt.segment(fBinMin,fBinNN).eval(); 
    fLTF.Y     = fLTF.Y.block(fBinMin,0,fBinNN,fLTF.M.rows()).eval(); //(don't forget to call 'eval()'!
    for ( auto& [name,V] : fLTF.Vs )    V = V.block(fBinMin,fBinMin,fBinNN,fBinNN).eval();
-   for ( auto& [name,s] : fLTF.Sys )   s= s.segment(fBinMin,fBinNN).eval();
+   for ( auto& [name,s] : fLTF.Sys )   s = s.segment(fBinMin,fBinNN).eval();
    for ( auto& [name,V] : fLTF.VsExt ) V = V.block(fBinMin,fBinMin,fBinNN,fBinNN).eval();
    for ( auto& [name,s] : fLTF.SysExt) s = s.segment(fBinMin,fBinNN).eval();
+   for ( auto& [name,V] : fLTF.SysY )  V = V.block(fBinMin,0,fBinNN,V.cols()).eval();
+   if ( fLTF.SysA.size() ) { // warning. not implemented
+      cerr<<"Selection of fit range not implemented for uncertainties on migration matrix."<<endl;
+      cout<<"Please provide this (trivial) feature."<<endl;
+      exit(1);
+   }
+   //for ( auto& [name,V] : fLTF.SysA )   V = V.block(fBinMin,fBinMin,fBinNN,fBinNN).eval();
    
 }
 

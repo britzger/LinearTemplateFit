@@ -20,7 +20,7 @@ all: slib bin
 ###########################################################
 # libraries 
 slib:
-	$(CXX) -shared -o libLTF.so src/LTF.cxx -O2 -fPIC -g -Wall -std=gnu++17 -I.
+	$(CXX) -shared -o libLTF.so src/LTF.cxx -O0 -fPIC -g -Wall -std=gnu++17 -I.
 
 root-slib:
 	root -b -q src/LTF.cxx+

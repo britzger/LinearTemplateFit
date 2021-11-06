@@ -69,6 +69,7 @@ public:
       ~LiTeFit(){}
       double DoLiTeFit();                                                        //!< \brief Run linear template fit (LiTeFit,LTF) with previously set input parameters
       double DoLiTeFit(int mPolN, int mOrdInfrc, const Eigen::VectorXd& ahat);   //!< \brief Run non-linear template fit with previously set input parameters
+      double DoQuadraticTemplateFit(int nIter=3) {return DoIterativeFitNewton(nIter);};        //!< \brief Run a quadratic template fit with nIter iterations
       double DoIterativeFitNewton(int nIter=3, int nPol=2, int nInfrc=1);        //!< \brief Run an non-linear template fit with iterative improvements
       double DoIterativeFitTaylor(int nIter=4, double StepSize=0.6, int nPol=2, int nInfrc=1);   //!< \brief Run an non-linear template fit with iterative improvements
       void ApplyLogNormalDistribution();                                         //!< \brief Assume underlying log-normal distributed probability density functions.
