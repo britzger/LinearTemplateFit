@@ -452,8 +452,6 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
     
     //gChi2->SetTitle(";#alpha_{0} [unit];#chi^{2}/ndf");
     gChi2->SetTitle((";"+referencename+";#chi^{2}/ndf").c_str());
-    //gChi2->SetMinimum(0.75); // 0.75 for Quadratic Fit in paper
-    //gChi2->SetMaximum(1.2);  // 1.2 for Quadratic Fit in paper
     gChi2->SetMinimum(0.0);
     gChi2->SetMaximum(2.5); 
 
@@ -730,7 +728,7 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
    gStyle->SetOptStat(0);
    gSystem->mkdir("plots");
    auto& M = fit.M;
-   
+
    // sanity check
    if ( M.cols() != 2 ) {cout<<"Error! only 1-dim plotting implemented."<<endl;exit(1);}
    Eigen::VectorXd reference_values = M.col(1);
@@ -762,7 +760,7 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
       templates[iref]->SetLineWidth(2);
       if ( iref == 0 ) {
-         templates[0]->SetTitle(("Linear Template Fit;"+observablename+";"+yaxistitle).c_str());
+         templates[0]->SetTitle(("Quadratic Template Fit;"+observablename+";"+yaxistitle).c_str());
          templates[0]->SetLineColor(kRed+1);
          if ( templates[0]->GetMaximum()>0 )templates[0]->SetMinimum(0);
          if ( !fit.GetLogNormal() ) 
