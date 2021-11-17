@@ -1044,7 +1044,7 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
        legend.SetFillStyle(0);
        legend.SetBorderSize(0);
        legend.SetTextSize(0.045);
-       legend.AddEntry(gChi2LTF,"#hat#chi^{2} of the iterative template fit","P");
+       legend.AddEntry(gChi2LTF,"#hat#chi^{2} of the Quadratic Template Fit","P");
        legend.AddEntry(gChi2,   "#chi^{2}_{#font[12]{j}} of the individual templates","PL");
        legend.AddEntry(gChi2->GetFunction("pol2"),"Parabola","L");
        //legend.AddEntry(gChi2chk,"Minimum of #chi^{2} parabola #scale[0.8]{(#check#chi^{2})}","P"); //  (#check#chi^{2})
