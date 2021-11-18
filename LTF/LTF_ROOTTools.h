@@ -343,7 +343,8 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
          gexp->Fit("pol1","QW");
 
          Eigen::VectorXd ltfpol1param =(fit.Y*fit.Mc().transpose()).row(ibin);
-         graph->GetFunction("pol1")->SetParameter(0,ltfpol1param(0));
+         if ( graph->GetFunction("pol1") )
+            graph->GetFunction("pol1")->SetParameter(0,ltfpol1param(0));
 
          f1log->SetParameter(0, gexp->GetFunction("pol1")->GetParameter(0));
          f1log->SetParameter(1, gexp->GetFunction("pol1")->GetParameter(1));
@@ -454,6 +455,8 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
     gChi2->SetTitle((";"+referencename+";#chi^{2}/ndf").c_str());
     gChi2->SetMinimum(0.0);
     gChi2->SetMaximum(2.5); 
+    gChi2->SetMinimum(0.75); // use for CMS jet fits
+    gChi2->SetMaximum(1.00); // use for CMS jet fits 
 
     gChi2->Draw("ap");
     if ( reference_values.size()+1<= 8 ) 

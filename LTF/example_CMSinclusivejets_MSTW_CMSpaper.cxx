@@ -189,7 +189,7 @@ int example_CMSinclusivejets_MSTW_CMSpaper() {
 #if defined __WITH_ROOT__ || defined __CLING__
    vector<double> bins;
    for ( int i = 0; i<data.size()+1; i++ ) bins.push_back(i); // dummy binning for plotting-function
-   LTF_ROOTTools::plotLiTeFit(fit,bins,"d^{2}#sigma_{jet}/dp_{T}d|y| [pb/GeV]","Reference value:  #alpha_{s}(M_{Z})","Bin");
+   LTF_ROOTTools::plotLiTeFit(fit,bins,"d^{2}#sigma_{jet}/dp_{T}d|y| [pb/GeV]","#alpha_{s}(m_{Z})","Bin");
 #endif
 
    return 0; 
