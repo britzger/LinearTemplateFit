@@ -1,5 +1,10 @@
 # The Linear Template Fit: `LTF'  
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![](https://img.shields.io/badge/version-stable-yellow.svg)]()
+[![](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/) 
+[![](https://img.shields.io/badge/docs-home-blue.svg)](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/) 
+
 The *Linear Template Fit* is an analytic expression for parameter estimation which combines the statistical measure with its optimization.
 It may be useful for a wide variety of fitting problems. More details are provided in arXiv:2108.XXXXX.
 
