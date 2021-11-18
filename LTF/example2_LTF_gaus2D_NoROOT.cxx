@@ -81,46 +81,10 @@ int example2_LTF_gaus2D_NoROOT() {
    ltf.AddError("stat.", stat,0.);
 
 
-   //LTF::LiTeFit fit2 = ltf.DoIterativeFitNewton(2,2,1);
    LTF::LiTeFit fit2 = ltf.DoLiTeFit();
+   //LTF::LiTeFit fit2 = ltf.DoQuadraticTemplateFit();
    fit2.PrintFull();
 
-   // fit2.DoIterativeFitNewton() ;
-
-   // LTF::LiTeFit fit2 = ltf.DoLiTeFit();
-   // fit2.PrintFull();
-   // fit2.DoIterativeFitNewton() ;
-
-   // LTF::LiTeFit fit2 = ltf.DoLiTeFit();
-   // fit2.DoIterativeFit(6,0.6,2,0);
-   // fit2.PrintFull();
-
-   // fit2.DoIterativeFit(6,0.6,2,1);
-   //fit2.PrintFull();
-
-
-   // LTF::LiTeFit fit = ltf.DoLiTeFit();
-   // //fit.PrintFull();
-   // Eigen::VectorXd ahat = fit.ahat;
-   // for ( int kk = 0 ; kk<4 ; kk++ ) {
-   //    //ahat = (fit.SolveLinearTemplateFit(2,1,ahat) - ahat)*0.6+ahat;
-   //    fit.DoLiTeFit(2,1,ahat);
-   //    ahat = (fit.ahat - ahat)*0.6+ahat;
-   //    cout<<"kk: "<<kk<<endl<<ahat<<endl;
-   // }
-
-   // if ( ii==0 ) {
-   //    fit.PrintFull();
-   //    //
-   //LTF_ROOTTools::plotLiTeFit_2D(fit2,bins);
-   // }
-   // else {
-   //    fit.PrintShort();
-   // }
-
-
-
-   
    return 0;
   
 }
