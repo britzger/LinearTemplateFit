@@ -1,7 +1,7 @@
 # The Linear Template Fit: `LTF'  
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![](https://img.shields.io/badge/version-stable-yellow.svg)]()
+[![](https://img.shields.io/badge/version-stable-green.svg)]()
 [![](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/) 
 [![](https://img.shields.io/badge/docs-home-blue.svg)](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/) 
 
