@@ -2093,6 +2093,22 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
       chisq_part[name]       = resid.transpose() * W * V * W * resid ;
    for ( int i = nPar ; i<int(ahat.rows()) ; i++ )  // corr. uncertainties (this->Sys)
       chisq_part[Sys[i-nPar].first] = ahat(i) * ahat(i);
+   // -- include also  external syst. Note: the fit-chi2 will be preserved only with above's uncertainties
+   for ( const auto& [name,V] : this->VsExt )     // external uncertainties
+      chisq_part[name]       = resid.transpose() * W * V * W * resid ;
+   for ( const auto& [name,s] : this->SysExt )     // external shifts
+      chisq_part[name]       = pow( (s.transpose() * W * resid)(0,0),2) ;
+
+   // --- (pseudo-)nuisance paramters for external uncertainties
+   if ( this->SysExt.size() ) {
+      Eigen::MatrixXd Vtot = LTF::VSum(Vs,Sys);
+      Eigen::MatrixXd Vinv = Vtot.inverse();
+      for ( const auto& [name,s] : this->SysExt )  {
+         double n = (s.transpose()*W*resid)(0,0);
+         double dn = sqrt((s.transpose()*Vinv*s)(0,0));
+         nuisance_SysExt[name] = make_pair(n,dn);
+      }
+   }
 
 
 
@@ -2281,8 +2297,9 @@ Eigen::MatrixXd LTF::VSum( const std::map<std::string,Eigen::MatrixXd>& Vs, cons
 // -------------------------------------------------------------------- //
 //! \brief Calculate covariance matrix as sum of individual matrices and systematic shifts
 //! \param Vs        Covariance matrices, i.e. uncorr. and/or cov. uncertainties
+//! \param Sys       Correlated systematic uncertainties
 //static 
-Eigen::MatrixXd LTF::VSum( const std::vector<std::pair<std::string,Eigen::MatrixXd > >& Vs ) {
+Eigen::MatrixXd LTF::VSum( const std::vector<std::pair<std::string,Eigen::MatrixXd > >& Vs, const std::vector<std::pair<std::string,Eigen::VectorXd > >& Sys ) {
    int n = Vs.size() ? Vs.begin()->second.rows() : 0;
    Eigen::MatrixXd ret = Eigen::MatrixXd::Zero( n, n);
    if ( Vs.empty() ) {
@@ -2290,6 +2307,7 @@ Eigen::MatrixXd LTF::VSum( const std::vector<std::pair<std::string,Eigen::Matrix
       return ret;
    }
    for ( const auto& V : Vs )       ret += V.second;
+   for ( const auto& v : Sys )      ret += LTF::GetV_Delta(v.second,1);
    return ret;
 }
 

@@ -117,6 +117,7 @@ public:
       std::map<std::string,Eigen::VectorXd> DeltaSysExt;                         //!< 'external' correlated systematic uncertainty
       std::map<std::string,Eigen::VectorXd> DeltaSysY;                           //!< systematic uncertainty from the templates
       std::map<std::string,Eigen::VectorXd> DeltaSysA;                           //!< systematic uncertainty from the response matrix
+      std::map<std::string,std::pair<double,double> > nuisance_SysExt;           //!< nuisance parameters (and their uncertainties) for external syst. uncertainties
 
       // --- result from alternative pol2-fit to chi2-values of the templates
       Eigen::VectorXd achk;                                                      //!< result from polynomial fit to chi2's of templates
@@ -440,6 +441,10 @@ public:
    const LiTeFit& DoLiTeFit();
    const LiTeFit& DoIterativeFitNewton(int nIter=3, int nPol=2, int nInfrc=1);
 
+   //!< \brief Run a quadratic template fit with nIter iterations
+   //! \returns   LiTeFit-object with all relevant quantities
+   const LiTeFit& DoQuadraticTemplateFit(int nIter=3) {return DoIterativeFitNewton(nIter);};        
+
    // ------------------------------------------- //
    // --- Choose normal or log-normal uncertainties 
    // ------------------------------------------- //
@@ -566,7 +571,8 @@ public:
 
    //! \brief Calculate covariance matrix as sum of individual matrices and systematic shifts
    //! \param Vs        Covariance matrices, i.e. uncorr. and/or cov. uncertainties
-   static Eigen::MatrixXd VSum( const std::vector<std::pair<std::string,Eigen::MatrixXd > >& Vs );
+   //! \param Sys       correlated systematic uncertainties
+   static Eigen::MatrixXd VSum( const std::vector<std::pair<std::string,Eigen::MatrixXd > >& Vs, const std::vector<std::pair<std::string,Eigen::VectorXd > >& Sys = std::vector<std::pair<std::string,Eigen::VectorXd > >() );
 
    //! \brief Calculate correlation matrix from given covariacne matrix V
    static Eigen::MatrixXd Cov_to_Cor(const Eigen::MatrixXd& V);
