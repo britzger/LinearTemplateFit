@@ -19,7 +19,7 @@ EIGEN_INCLUDE = $(EIGEN__HOME)/include/eigen3
 endif
 
 ifeq (,$(wildcard $(EIGEN_INCLUDE)/Eigen/Eigen))
-$(error Eigen not found! Please provide EIGEN__HOME or change Makefile accordingly)
+$(error Eigen not found! Please provide EIGEN__HOME, provide directory 'Eigen' or change Makefile accordingly)
 endif
 
 ###########################################################
