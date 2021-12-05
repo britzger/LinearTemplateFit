@@ -1,4 +1,4 @@
-# The Linear Template Fit: `LTF'  
+# The Linear Template Fit: 'LTF'  
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![](https://img.shields.io/badge/version-stable-green.svg)]()
@@ -17,8 +17,7 @@ An interactive usability is given through ROOT's [CLING](https://root.cern/cling
 If you prefer python, julia, go, awk, or any other language or build-tool, please send me your implementation or the wrapper.
 Furthermore, a direct implementation in the ROOT package would be appreciated.
 
-
-# Links
+## Links
 The pre-print is available from arXiv: arXiv:2112.XXXXX
 
 The code repository is hosted at: [github.com/britzger/LinearTemplateFit](https://github.com/britzger/LinearTemplateFit/)
@@ -28,20 +27,15 @@ A Doxygen documentation is at: [www.mpp.mpg.de/~britzger/LinearTemplateFit/doxyg
 Some lmited further documentation is available from: [www.mpp.mpg.de/~britzger/LinearTemplateFit](https://www.mpp.mpg.de/~britzger/LinearTemplateFit)
 
 
-
-# The LTF package
-
-A doxygen code documentation is at: [mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/)
-
 ## Dependencies
 The only dependencies are a recent `C++17` compatible C++-compiler and `Eigen` (see below).
 The `ROOT`-package is optional.
 
-On CentOS7 with `cvmfs`, you can source `lcgenv-LCG_97-x86_64-centos7-gcc9-opt.sh` to get a recent C++ compiler and ROOT.
+On a machine with CentOS7 and `cvmfs`, one can source `lcgenv-LCG_97-x86_64-centos7-gcc9-opt.sh` to get a recent C++ compiler and ROOT.
 
 ## Package structure
 The main class of the Linear Template Fit is named `LTF`, and the fit returns a small helper class `LTF::LiTeFit`.
-So, the class structure is just:
+So, the class structure is simply:
 ```
    class LTF
    class LTF::LiTeFit
@@ -62,15 +56,10 @@ The source code for the shared library `libLTF.so` is
 
 ## Eigen
 The Linear Template Fit is implemented using the linear algebra package [Eigen](https://eigen.tuxfamily.org).
-Eigen is a header-only package and is included into the template fit through the directory `Eigen'.
+Eigen is a header-only package and is included into the template fit through the directory `Eigen`, the env-variable `EIGEN__HOME` or 
+alternatively a recent copy is provided in the directory `Eigen_copy`.
 
-Please copy a latest release into the directory `LTF/Eigen', or provide a symbolic link.
-Alternatively, there is a rather recent version included into this repository.
-To make use of it, just generate a symbolic link
-```
-   cd LTF
-   ln -s copy_of_Eigen Eigen
-```
+Please copy a latest release into the directory 'LTF/Eigen', or provide a symbolic link.
 
 ## Shared library `libLTF'
 Generate a shared library named `libLTF.so` by typing
