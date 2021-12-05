@@ -5,20 +5,21 @@
 [![](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/) 
 [![](https://img.shields.io/badge/docs-home-blue.svg)](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/) 
 
-The *Linear Template Fit* is an analytic expression for parameter estimation which combines the statistical measure with its optimization.
-It may be useful for a wide variety of fitting problems. More details are provided in arXiv:2108.XXXXX.
+The *Linear Template Fit* is a matrix formalism for the determination of the best estimator for simulation-based parameter estimation.
+The Linear Template Fit combines a linear regression with a least square method and its optimization, and i
+ employs only predictions that are calculated beforehand and which are provided for a few values of the parameter of interest.
+It may be useful for a wide variety of fitting problems. More details are provided in arXiv:2112.XXXXX.
 
 The Linear Template Fit is implemented in `C++` using the [Eigen](https://eigen.tuxfamily.org) package for linear algebra.
 Some examples make use of the [ROOT](https://root.cern) analysis framework.
 An interactive usability is given through ROOT's [CLING](https://root.cern/cling) LLVM-interpreter for C++ (see below).
-
 
 If you prefer python, julia, go, awk, or any other language or build-tool, please send me your implementation or the wrapper.
 Furthermore, a direct implementation in the ROOT package would be appreciated.
 
 
 # Links
-The pre-print can be downloaded at: arXiv:2108.XXXXX
+The pre-print is available from arXiv: arXiv:2112.XXXXX
 
 The code repository is hosted at: [github.com/britzger/LinearTemplateFit](https://github.com/britzger/LinearTemplateFit/)
 
