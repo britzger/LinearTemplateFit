@@ -150,7 +150,7 @@ int main() {
    return example2_LTF_gaus_sigma();
 #else
    //! printout if compiled without ROOT
-   std::cout<<"This example is working only if ROOT is available. Otherwise, please see 'example2_LTF_gaus2D_NoROOT'."<<std::endl;
+   std::cout<<"This example is working only if ROOT is available."<<std::endl;
    return 0;
 #endif
 }
