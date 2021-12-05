@@ -1,4 +1,4 @@
-# The Linear Template Fit: 'LTF'  
+# The Linear Template Fit: *LTF*  
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![](https://img.shields.io/badge/version-stable-green.svg)]()
