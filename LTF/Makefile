@@ -11,6 +11,12 @@ ifdef WITH_ROOT
 WITH_ROOT=-D__WITH_ROOT__ $(shell root-config --libs) -I$(shell root-config --incdir)
 endif
 
+# take eigen from local copy in 'Eigen_copy' or from
+# variable "EIGEN__HOME"
+EIGEN_INCLUDE = ./Eigen_copy
+ifdef EIGEN__HOME
+EIGEN_INCLUDE = $(EIGEN__HOME)
+endif
 
 ###########################################################
 # all
@@ -20,7 +26,7 @@ all: slib bin
 ###########################################################
 # libraries 
 slib:
-	$(CXX) -shared -o libLTF.so src/LTF.cxx -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I.
+	$(CXX) -shared -o libLTF.so src/LTF.cxx -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I. -I$(EIGEN_INCLUDE)
 
 root-slib:
 	root -b -q src/LTF.cxx+
@@ -38,7 +44,7 @@ programs += example3_LTF_gaus_sigma
 bin: $(programs)
 
 $(programs): %: %.cxx
-	$(CXX) -o $@ $< -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -L. -lLTF -lstdc++ $(WITH_ROOT) 
+	$(CXX) -o $@ $< -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -I$(EIGEN_INCLUDE) -L. -lLTF -lstdc++ $(WITH_ROOT) 
 
 
 ###########################################################
