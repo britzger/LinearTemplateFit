@@ -15,7 +15,11 @@ endif
 # variable "EIGEN__HOME"
 EIGEN_INCLUDE = ./Eigen_copy
 ifdef EIGEN__HOME
-EIGEN_INCLUDE = $(EIGEN__HOME)
+EIGEN_INCLUDE = $(EIGEN__HOME)/include/eigen3
+endif
+
+ifeq (,$(wildcard $(EIGEN_INCLUDE)/Eigen/Eigen))
+$(error Eigen not found! Please provide EIGEN__HOME or change Makefile accordingly)
 endif
 
 ###########################################################
