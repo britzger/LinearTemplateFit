@@ -6,7 +6,7 @@
 [![](https://img.shields.io/badge/docs-home-blue.svg)](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/) 
 
 The *Linear Template Fit* is a matrix formalism for the determination of the best estimator for simulation-based parameter estimation.
-The Linear Template Fit combines a linear regression with a least square method and its optimization, and i
+The Linear Template Fit combines a linear regression with a least square method and its optimization, and it
  employs only predictions that are calculated beforehand and which are provided for a few values of the parameter of interest.
 It may be useful for a wide variety of fitting problems. More details are provided in arXiv:2112.XXXXX.
 
