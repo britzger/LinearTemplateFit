@@ -38,7 +38,7 @@ programs += example3_LTF_gaus_sigma
 bin: $(programs)
 
 $(programs): %: %.cxx
-	$(CXX) -o $@ $< -O0 -g -Wall -Wno-sign-compare -std=gnu++17 -I. -L. -lLTF -lstdc++ $(WITH_ROOT) 
+	$(CXX) -o $@ $< -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -L. -lLTF -lstdc++ $(WITH_ROOT) 
 
 
 ###########################################################
