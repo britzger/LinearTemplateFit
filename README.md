@@ -18,7 +18,7 @@ If you prefer python, julia, go, awk, or any other language or build-tool, pleas
 Furthermore, a direct implementation in the ROOT package would be appreciated.
 
 ## Links
-The pre-print is available from arXiv: arXiv:2112.XXXXX
+The pre-print is available from arXiv: [arXiv:2112.01548](https://arxiv.org/abs/2112.01548)
 
 The code repository is hosted at: [github.com/britzger/LinearTemplateFit](https://github.com/britzger/LinearTemplateFit/)
 
