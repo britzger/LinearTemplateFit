@@ -30,7 +30,8 @@ all: slib bin
 ###########################################################
 # libraries 
 slib:
-	$(CXX) -shared -o libLTF.so src/LTF.cxx -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I. -I$(EIGEN_INCLUDE)
+	@mkdir -p $(@D)/lib 
+	$(CXX) -shared -o lib/libLTF.so src/LTF.cxx -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I. -I$(EIGEN_INCLUDE)
 
 root-slib:
 	root -b -q src/LTF.cxx+
@@ -48,14 +49,18 @@ programs += example3_LTF_gaus_sigma
 bin: $(programs)
 
 $(programs): %: %.cxx
-	$(CXX) -o $@ $< -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -I$(EIGEN_INCLUDE) -L. -lLTF -lstdc++ $(WITH_ROOT) 
+	@mkdir -p bin 
+	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -I$(EIGEN_INCLUDE) -Llib/ -lLTF -lstdc++ $(WITH_ROOT) 
 
 
 ###########################################################
 # cleanup
 clean:
-	rm libLTF.so
-	rm $(programs)
+	rm lib/libLTF.so
+	rm -rf lib/libLTF.so.dSYM
+	rm -rf bin/*.dSYM
+	rm bin/*
+
 
 .PHONY: all root-slib clean
 
