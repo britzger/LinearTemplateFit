@@ -50,7 +50,7 @@ bin: $(programs)
 
 $(programs): %: %.cxx
 	@mkdir -p bin 
-	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -I$(EIGEN_INCLUDE) -Llib/ -lLTF -lstdc++ $(WITH_ROOT) 
+	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wno-unused-variable -Wl,-rpath,$(PWD)/lib -std=gnu++17 -I. -I$(EIGEN_INCLUDE) -Llib/ -lLTF -lstdc++ $(WITH_ROOT) 
 
 
 ###########################################################
