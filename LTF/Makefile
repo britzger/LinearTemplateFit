@@ -7,8 +7,12 @@
 
 # check if ROOT exists
 WITH_ROOT := $(shell command -v root-config 2> /dev/null)
+ROOTLIBS=
+ROOTINCLUDES=
 ifdef WITH_ROOT
-WITH_ROOT=-D__WITH_ROOT__ $(shell root-config --libs) -I$(shell root-config --incdir)
+WITH_ROOT=-D__WITH_ROOT__
+ROOTLIBS=$(shell root-config --libs)
+ROOTINCLUDES=-I$(shell root-config --incdir)
 endif
 
 # take eigen from local copy in 'Eigen_copy' or from
@@ -16,6 +20,12 @@ endif
 EIGEN_INCLUDE = ./Eigen_copy
 ifdef EIGEN__HOME
 EIGEN_INCLUDE = $(EIGEN__HOME)/include/eigen3
+endif
+
+SRC=src/LTF.cxx
+SRC+=src/LTF_Tools.cxx
+ifdef WITH_ROOT
+SRC+=src/LTF_ROOTTools.cxx
 endif
 
 ifeq (,$(wildcard $(EIGEN_INCLUDE)/Eigen/Eigen))
@@ -31,7 +41,7 @@ all: slib bin
 # libraries 
 slib:
 	@mkdir -p $(@D)/lib 
-	$(CXX) -shared -o lib/libLTF.so src/LTF.cxx -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I. -I$(EIGEN_INCLUDE)
+	$(CXX) -shared -o lib/libLTF.so $(SRC) -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I. -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) $(ROOTLIBS) 
 
 root-slib:
 	root -b -q src/LTF.cxx+
@@ -46,11 +56,12 @@ programs += example1_LTF_gaus_NoROOT
 programs += example2_LTF_gaus2D
 programs += example2_LTF_gaus2D_NoROOT
 programs += example3_LTF_gaus_sigma
+programs += mjet_mtop
 bin: $(programs)
 
 $(programs): %: %.cxx
 	@mkdir -p bin 
-	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -I$(EIGEN_INCLUDE) -Llib/ -lLTF -lstdc++ $(WITH_ROOT) 
+	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wl,-rpath,. -std=gnu++17 -I. -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) -Llib/ -lLTF -lstdc++ $(ROOTLIBS) 
 
 
 ###########################################################
