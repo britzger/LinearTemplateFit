@@ -26,7 +26,7 @@
 
 #if defined __WITH_ROOT__ || defined __CLING__
 #include "LTF/LTF.h"
-#include "LTF_ROOTTools.h"
+#include "LTF/LTF_ROOTTools.h"
 #include <TH1D.h>
 #include <string>
 
