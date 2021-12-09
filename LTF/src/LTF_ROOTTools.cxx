@@ -146,7 +146,7 @@ TH1D* LTF_ROOTTools::MakeHistogram(const Eigen::VectorXd& values, vector<double>
    TH1D* hist = bins.empty() ?
       new TH1D("hist","hist",values.size(),0,values.size() ) :
       new TH1D("hist","hist",bins.size()-1, &bins[0]);
-   if ( bins.size() && values.size() != bins.size()-1 ) {cout<<"ERROR! binning and number of entries does not fit!"<<endl;exit(1);}
+   if ( bins.size() && int(values.size()+1) != int(bins.size()) ) {cout<<"ERROR! binning and number of entries does not fit!"<<endl;exit(1);}
    for ( size_t i = 0 ;i<bins.size()-1; i++ ) {
       hist->SetBinContent(i+1, values(i));
       if ( V.size() ) {
@@ -512,6 +512,8 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins )
 {
 
+   gStyle->SetOptStat(0);
+   gSystem->mkdir("plots");
    auto& M = fit.M;
    if ( M.cols() != 3 ) {cout<<"Error! only 2-dim plotting implemented."<<endl;exit(1);}
    Eigen::VectorXd reference_values1 = M.col(1);

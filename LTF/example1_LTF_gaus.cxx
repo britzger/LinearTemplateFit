@@ -28,6 +28,7 @@
 
 #include "LTF/LTF.h"
 #include "LTF/LTF_ROOTTools.h"
+#include <TSystem.h>
 
 void PrintAsciiTable(const map<double,TH1D*>&, TH1D* data);
 
@@ -36,7 +37,6 @@ void PrintAsciiTable(const map<double,TH1D*>&, TH1D* data);
 int example1_LTF_gaus() {
    using namespace std;
 
-   gStyle->SetOptStat(0);
    gSystem->Load("libLTF.so");
    TH1D::AddDirectory(false);
    TH1::SetDefaultSumw2(true);

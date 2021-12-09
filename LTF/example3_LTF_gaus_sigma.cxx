@@ -27,6 +27,7 @@
 #if defined __WITH_ROOT__ || defined __CLING__
 #include "LTF/LTF.h"
 #include "LTF/LTF_ROOTTools.h"
+#include <TSystem.h>
 #include <TH1D.h>
 #include <string>
 
@@ -40,7 +41,6 @@ void PrintAsciiTable(const map<vector<double>,TH1D*>& templates, TH1D* data);
 //! main
 int example2_LTF_gaus_sigma() {
 
-   gStyle->SetOptStat(0);
    gSystem->Load("libLTF.so");
    TH1D::AddDirectory(false);
    TH1::SetDefaultSumw2(true);
