@@ -12,7 +12,7 @@ ROOTINCLUDES=
 ifdef WITH_ROOT
 WITH_ROOT=-D__WITH_ROOT__
 ROOTLIBS=$(shell root-config --libs)
-ROOTINCLUDES=-I$(shell root-config --incdir)
+ROOTINCLUDES=-I$(shell root-config --incdir) $(WITH_ROOT)
 endif
 
 # take eigen from local copy in 'Eigen_copy' or from
@@ -34,7 +34,9 @@ endif
 
 ###########################################################
 # all
-all: slib bin
+all:
+	$(MAKE) slib
+	$(MAKE) bin
 
 
 ###########################################################
@@ -61,7 +63,7 @@ bin: $(programs)
 
 $(programs): %: %.cxx
 	@mkdir -p bin 
-	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wno-unused-variable -Wl,-rpath,$(PWD)/lib -std=gnu++17 -I. -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) -Llib/ -lLTF -lstdc++ $(ROOTLIBS) 
+	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wno-unused-variable -Wl,-rpath,$(PWD)/lib -std=gnu++17 -I. -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) -Llib/ -lLTF -lstdc++ $(ROOTLIBS)
 
 
 ###########################################################

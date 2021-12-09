@@ -47,20 +47,20 @@ std::vector<std::vector<double > > LTF_Tools::read_correlations(std::string file
 //!
 std::vector<std::vector<double > > LTF_Tools::corr_to_cov( const std::vector<std::vector<double > >& corr, const std::vector<double >& percenterr, const std::vector<double >& data) { 
    std::vector<double > err(data.size());
-   for ( int i = 0 ; i<err.size() ; i++ ) 
+   for ( size_t i = 0 ; i<err.size() ; i++ ) 
       err[i] = percenterr[i]/100.*data[i];
    
    std::vector<std::vector<double > > cov(err.size());
-   for ( int i = 0 ; i<err.size() ; i++ ) {
+   for ( size_t i = 0 ; i<err.size() ; i++ ) {
       cov[i].resize(err.size());
-      for ( int j = 0 ; j<err.size() ; j++ ) {
+      for ( size_t j = 0 ; j<err.size() ; j++ ) {
          cov[i][j] = corr[i][j]*err[i]*err[j];
          //if ( corr[i][j] != 0 ) cout<<i<<", "<<j<<"\t"<<corr[i][j]<<"\t"<<percenterr[i]<<"\t"<<data[i]<<"\te: "<<err[i]<<"\tcov: "<<cov[i][j]<<endl;
       }
    }
 
-   for ( int i = 0 ; i<err.size() ; i++ ) {
-      for ( int j = 0 ; j<i ; j++ ) {
+   for ( size_t i = 0 ; i<err.size() ; i++ ) {
+      for ( size_t j = 0 ; j<i ; j++ ) {
          if ( fabs((cov[i][j] / cov[j][i]-1.) > 1e-3) )
             cout<<i<<", "<<j<<"\t"<<corr[i][j]<<"\t"<<percenterr[i]<<"\t"<<data[i]<<"\te: "<<err[i]<<"\tcov: "<<cov[i][j]<<"\t ratio ij/ji: "<<(cov[i][j] / cov[j][i]-1.)<<endl;
       }
