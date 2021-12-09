@@ -58,7 +58,6 @@ programs += example1_LTF_gaus_NoROOT
 programs += example2_LTF_gaus2D
 programs += example2_LTF_gaus2D_NoROOT
 programs += example3_LTF_gaus_sigma
-programs += mjet_mtop
 bin: $(programs)
 
 $(programs): %: %.cxx
