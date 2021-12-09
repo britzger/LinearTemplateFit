@@ -1,5 +1,6 @@
 //#include "include/LTF/LTF.h"
 #include "LTF/LTF.h"
+#include "LTF/LTF_ROOTTools.h"
 
 #include <TROOT.h>
 #include <TStyle.h>
@@ -26,17 +27,14 @@
 
 using namespace std;
 
-class LTF_ROOTTools {
-public:
-
 // __________________________________________________________________________________ //
 //!
 //! read_input_table2()
 //!
 //! read input data table from file 
-//!
-static
-std::map < std::string, std::vector<double> > read_input_table2(std::string filename, int ncol ) {
+//! 
+std::map < std::string, std::vector<double> > LTF_ROOTTools::read_input_table2(std::string filename, int ncol ) 
+{
    std::map < std::string, std::vector<double> > ret;
    std::vector<std::string> cols;
    // open file for reading                                           
@@ -72,10 +70,9 @@ std::map < std::string, std::vector<double> > read_input_table2(std::string file
 //!
 //!  make a TGraph for plotting purposes
 //!
-static
-TGraphErrors* MakeTGraph(const Eigen::VectorXd& xvalues, int ibin, const Eigen::MatrixXd& Y,
-                         const std::map<std::string,Eigen::MatrixXd >& VSysY = {}
-   ) {
+TGraphErrors* LTF_ROOTTools::MakeTGraph(const Eigen::VectorXd& xvalues, int ibin, const Eigen::MatrixXd& Y,
+                         const std::map<std::string,Eigen::MatrixXd >& VSysY ) 
+{
 
    TGraphErrors* graph = new TGraphErrors();
    for ( int i = 0 ; i<xvalues.size() ; i++ ) {
@@ -97,11 +94,10 @@ TGraphErrors* MakeTGraph(const Eigen::VectorXd& xvalues, int ibin, const Eigen::
 //!
 //!  make a TGraph2D for plotting purposes
 //!
-static
-TGraph2DErrors* MakeTGraph2D(const Eigen::VectorXd& xvalues, const Eigen::VectorXd& yvalues,
-                             int ibin, const Eigen::MatrixXd& Y,
-                             const std::map<std::string,Eigen::MatrixXd >& VSysY = {}
-   ) {
+TGraph2DErrors* LTF_ROOTTools::MakeTGraph2D(const Eigen::VectorXd& xvalues, const Eigen::VectorXd& yvalues,
+                                            int ibin, const Eigen::MatrixXd& Y,
+                                            const std::map<std::string,Eigen::MatrixXd >& VSysY ) 
+{
 
    TGraph2DErrors* graph = new TGraph2DErrors();
    for ( int i = 0 ; i<xvalues.size() ; i++ ) {
@@ -124,8 +120,8 @@ TGraph2DErrors* MakeTGraph2D(const Eigen::VectorXd& xvalues, const Eigen::Vector
 //! make a histogram and fill it with random events according to a gauss
 //! distribution around M
 //!
-static
-TH1D* MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<double> bins ) {
+TH1D* LTF_ROOTTools::MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<double> bins ) 
+{
    TRandom3 rn(seed);
    
    TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
@@ -145,8 +141,8 @@ TH1D* MakeHistogram(int nEvents, int seed, double mean, double sigma, vector<dou
 //!
 //!  make a histogram from an Eigen::Vector for plotting purposes
 //!
-static
-TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V = {} ) {
+TH1D* LTF_ROOTTools::MakeHistogram(const Eigen::VectorXd& values, vector<double> bins, const std::vector<std::pair<std::string,Eigen::MatrixXd > >& V ) 
+{
    TH1D* hist = bins.empty() ?
       new TH1D("hist","hist",values.size(),0,values.size() ) :
       new TH1D("hist","hist",bins.size()-1, &bins[0]);
@@ -174,12 +170,11 @@ TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, cons
 //!  The binning needs to be provided to the plotting function,
 //!  since this is not included in LTF::LiTeFit
 //! 
-static
-void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
-                 const string& yaxistitle    = "value [unit]",
-                 const string& referencename = "Reference value (#alpha) [unit]",
-                 const string& observablename = "Observable [unit]"
-   ) {
+void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
+                 const string& yaxistitle,
+                 const string& referencename,
+                 const string& observablename ) 
+{
    gStyle->SetOptStat(0);
    gSystem->mkdir("plots");
    auto& M = fit.M;
@@ -205,8 +200,8 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
    // c1.SetRightMargin(0.02);
 
    const char* ps_name = fit.GetLogNormal() ?
-      "LTFlog_plots.ps" :
-      "LTF_plots.ps";
+      "plots/LTFlog_plots.ps" :
+      "plots/LTF_plots.ps";
    c1.Print( (string(ps_name)+"[").c_str() );
 
    // ---------------------------------------------- //
@@ -283,7 +278,7 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
    gStyle->SetMarkerSize(2);
 
 
-   map < string, vector<double> > input_table = read_input_table2("data/CMS_data.txt",32);
+   //map < string, vector<double> > input_table = read_input_table2("data/CMS_data.txt",32);
 
    for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
    //for ( int ibin = 0 ; ibin<0 ; ibin++ ) {
@@ -410,13 +405,19 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
       // text.DrawLatex(0.20,0.20,Form("%3.0f_{ }<_{ }p_{T}_{ }<_{ }%3.0f_{ }GeV",input_table["ptlow"][ibin],input_table["pthigh"][ibin]));
       
       text.SetTextSize(0.04);
-      text.DrawLatex(0.20,0.93,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
-      text.DrawLatex(0.20,0.88,Form("%3.0f_{ }<_{ }p_{T}_{ }<_{ }%3.0f_{ }GeV",input_table["ptlow"][ibin],input_table["pthigh"][ibin]));
+      //text.DrawLatex(0.20,0.93,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
+      TString infotext = "_{ }<_{ }" + observablename + "_{ }<_{ }";
+      infotext.Prepend(Form("%3.0f", bins[ibin]));
+      infotext.Append(Form("%3.0f", bins[ibin+1]));
+      infotext.Append("_{}");
+      text.DrawLatex(0.20,0.93, infotext);
 
+/*
       cout<<input_table["ylow"][ibin]<<"\t"
           <<input_table["yhigh"][ibin]<<"\t"
           <<input_table["ptlow"][ibin]<<"\t"
           <<input_table["pthigh"][ibin]<<endl;
+*/
 
       c1.Print(ps_name);
       if ( fit.GetLogNormal() )
@@ -508,8 +509,8 @@ void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins,
 //!  The binning needs to be provided to the plotting function,
 //!  since this is not included in LTF::LiTeFit
 //! 
-static
-void plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins ){
+void LTF_ROOTTools::plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins )
+{
 
    auto& M = fit.M;
    if ( M.cols() != 3 ) {cout<<"Error! only 2-dim plotting implemented."<<endl;exit(1);}
@@ -723,12 +724,11 @@ void plotLiTeFit_2D(const LTF::LiTeFit& fit, const vector<double> bins ){
 //!  The binning needs to be provided to the plotting function,
 //!  since this is not included in LTF::LiTeFit
 //! 
-static
-void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins, 
-                 const string& yaxistitle    = "value [unit]",
-                 const string& referencename = "Reference value (#alpha) [unit]",
-                 const string& observablename = "Observable [unit]"
-   ) {
+void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins, 
+                 const string& yaxistitle,
+                 const string& referencename,
+                 const string& observablename) 
+{
    gStyle->SetOptStat(0);
    gSystem->mkdir("plots");
    auto& M = fit.M;
@@ -1064,5 +1064,3 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
 }
 
 
-
-};
