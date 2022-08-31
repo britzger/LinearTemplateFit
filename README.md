@@ -17,7 +17,7 @@ An interactive usability is given through ROOT's [CLING](https://root.cern/cling
 If you prefer python, julia, go, awk, or any other language or build-tool, please send me your implementation or the wrapper.
 Furthermore, a direct implementation in the ROOT package would be appreciated.
 
-If you use this code please cite: *D. Britzger, "The Linear Template Fit", [Eur.Phys.J.C 82 (2022) 731](https://doi.org/10.1140/epjc/s10052-022-10581-w) [arXiv:2112.01548](https://arxiv.org/abs/2112.01548), [DOI:10.1140/epjc/s10052-022-10581-w](https://doi.org/10.1140/epjc/s10052-022-10581-w)*.
+If you use this code please cite: *D. Britzger, "The Linear Template Fit", [Eur.Phys.J.C 82 (2022) 731](https://doi.org/10.1140/epjc/s10052-022-10581-w) [[arXiv:2112.01548]](https://arxiv.org/abs/2112.01548), [DOI:10.1140/epjc/s10052-022-10581-w](https://doi.org/10.1140/epjc/s10052-022-10581-w)*.
 
 ## Links
 The pre-print is available from arXiv: [arXiv:2112.01548](https://arxiv.org/abs/2112.01548)
