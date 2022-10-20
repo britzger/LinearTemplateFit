@@ -15,7 +15,7 @@ The Linear Template Fit may be useful for a wide variety of fitting problems. Mo
 The present implementation makes use of the [linear algebra classes](https://root.cern.ch/root/htmldoc/guides/users-guide/LinearAlgebra.html) as implemented in the [ROOT](root.cern.ch) analysis framework.
 Hence, the only external dependency is ROOT.
 
-Sevaral examples are available in the example diretory and are compiled together with the main library.
+Several examples are available in the example diretory and are compiled together with the main library.
 Besides the numerical results, the examples provide also some plots based on the ROOT plotting tools.
 
 All examples and classes can directly be executed in ROOT's C++-interpreter [CLING](https://root.cern/cling) (see instructions below).
