@@ -1,0 +1,5 @@
+ROOT_EXECUTABLE(example1_LTF_gaus example1_LTF_gaus.cxx LIBRARIES LTF)
+ROOT_EXECUTABLE(example2_LTF_gaus2D example2_LTF_gaus2D.cxx LIBRARIES LTF)
+ROOT_EXECUTABLE(example3_LTF_gaus_sigma example3_LTF_gaus_sigma.cxx LIBRARIES LTF)
+ROOT_EXECUTABLE(example_CMSinclusivejets_MSTW_CMSpaper example_CMSinclusivejets_MSTW_CMSpaper.cxx LIBRARIES LTF)
+ROOT_EXECUTABLE(example_CMSinclusivejets_NN30_BRSSWpaper example_CMSinclusivejets_NN30_BRSSWpaper.cxx LIBRARIES LTF)
