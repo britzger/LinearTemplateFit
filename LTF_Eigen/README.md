@@ -10,30 +10,71 @@ The Linear Template Fit combines a linear regression with a least square method 
  employs only predictions that are calculated beforehand and which are provided for a few values of the parameter of interest.
 It may be useful for a wide variety of fitting problems. More details are provided in [Eur.Phys.J.C 82 (2022) 731](https://doi.org/10.1140/epjc/s10052-022-10581-w) [arXiv:2112.01548](https://arxiv.org/abs/2112.01548).
 
-The Linear Template Fit is implemented in `C++` using the [Eigen](https://eigen.tuxfamily.org) package for linear algebra.
-Some examples make use of the [ROOT](https://root.cern) analysis framework.
-An interactive usability is given through ROOT's [CLING](https://root.cern/cling) LLVM-interpreter for C++ (see below).
-
-If you prefer python, julia, go, awk, or any other language or build-tool, please send me your implementation or the wrapper.
-Furthermore, a direct implementation in the ROOT package would be appreciated.
-
 If you use this code please cite: *D. Britzger, "The Linear Template Fit", [Eur.Phys.J.C 82 (2022) 731](https://doi.org/10.1140/epjc/s10052-022-10581-w) [[arXiv:2112.01548]](https://arxiv.org/abs/2112.01548), [DOI:10.1140/epjc/s10052-022-10581-w](https://doi.org/10.1140/epjc/s10052-022-10581-w)*.
 
-## Links
-The pre-print is available from arXiv: [arXiv:2112.01548](https://arxiv.org/abs/2112.01548)
 
-The code repository is hosted at: [github.com/britzger/LinearTemplateFit](https://github.com/britzger/LinearTemplateFit/)
+## The Eigen Implementation
+The Eigen-implementation of the Linear Template Fit employs the Eigen package for internal calculations.
+The only dependencies are a recent `C++17` compatible compiler and `Eigen` (see below).
 
-A Doxygen documentation is at: [www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/)
-
-Some limited additional documentation is available from: [www.mpp.mpg.de/~britzger/LinearTemplateFit](https://www.mpp.mpg.de/~britzger/LinearTemplateFit)
-
-
-## Dependencies
-The only dependencies are a recent `C++17` compatible C++-compiler and `Eigen` (see below).
-The `ROOT`-package is optional.
+Optionally, the classes and executables can be linked to ROOT, such that plots can be generated.
 
 On a machine with CentOS7 and `cvmfs`, one can source `lcgenv-LCG_97-x86_64-centos7-gcc9-opt.sh` to get a recent C++ compiler and ROOT.
+
+## Compilation
+In the main directory of the ROOT-implementaion, please type
+```
+$ make all
+```
+
+This executes the `make slib` and `make bin` and generates the following files
+````
+build/lib:
+libLTF.so
+
+build/bin:
+example1_LTF_gaus
+example1_LTF_gaus_NoROOT
+example2_LTF_gaus2D
+example2_LTF_gaus2D_NoROOT
+example3_LTF_gaus_sigma
+example_CMSinclusivejets_NN30_BRSSWpaper
+example_CMSinclusivejets_MSTW_CMSpaper
+```
+
+Next, you can directly execute some examples. For example
+```
+ $ build/bin/example1_LTF_gaus
+```
+
+The examples for the determination of the strong coupling constant (alpha_s) from CMS inclusive jet data require that
+the directory `data` is available as a relative path. So please run once
+```
+ $ ln -s ln -s ./examples/data .
+```
+and then
+```
+ $ build/bin/example_CMSinclusivejets_NN30_BRSSWpaper
+ $ build/bin/example_CMSinclusivejets_MSTW_CMSpaper
+```
+
+For the actual usage of the Linear Template Fit, please have a look into the example codes in the directory `examples`.
+
+
+# Further information
+
+## Interactive usage
+Whey ROOT is available, the Linear Template Fit  can be used interactively:
+```
+  $ root
+  root [0] .I ./Eigen_copy   // or any other Eigen include-directory
+  root [1] .I ./LTF/include
+  root [2] .L ./LTF/src/LTF.cxx
+  root [3] .L ./LTF/src/LTF_ROOTTools.cxx
+  root [4] .L ./LTF/src/LTF_Tools.cxx
+  root [5] LTF ltf;
+   // continue, and set templates and data next...
+```
 
 ## Package structure
 The main class of the Linear Template Fit is named `LTF`, and the fit returns a small helper class `LTF::LiTeFit`.
@@ -67,6 +108,11 @@ Please copy a latest release into the directory 'LTF/Eigen', or provide a symbol
 Generate a shared library named `libLTF.so` by typing
 ```
     make slib
+````
+
+Another option to compile the shared library with Root's cling compiler
+```
+    make root-slib
 ````
 
 
@@ -158,3 +204,14 @@ plotLiTeFit(fit,bins);
 ```
 where `bins` is a `vector<double>` that contains the binning, if this is needed.
 The axis titles can be passed to the function as described above.
+
+
+## Links
+The pre-print is available from arXiv: [arXiv:2112.01548](https://arxiv.org/abs/2112.01548)
+
+The code repository is hosted at: [github.com/britzger/LinearTemplateFit](https://github.com/britzger/LinearTemplateFit/)
+
+A Doxygen documentation is at: [www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen](https://www.mpp.mpg.de/~britzger/LinearTemplateFit/doxygen/)
+
+Some limited additional documentation is available from: [www.mpp.mpg.de/~britzger/LinearTemplateFit](https://www.mpp.mpg.de/~britzger/LinearTemplateFit)
+
