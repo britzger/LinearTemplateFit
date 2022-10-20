@@ -4,6 +4,10 @@
 #
 ###########################################################
 
+# Source directories
+EXAMPLE_DIR=examples
+LTF_DIR=LTF
+BUILD_DIR=build
 
 # check if ROOT exists
 WITH_ROOT := $(shell command -v root-config 2> /dev/null)
@@ -22,10 +26,10 @@ ifdef EIGEN__HOME
 EIGEN_INCLUDE = $(EIGEN__HOME)/include/eigen3
 endif
 
-SRC=src/LTF.cxx
-SRC+=src/LTF_Tools.cxx
+SRC=$(LTF_DIR)/src/LTF.cxx
+SRC+=$(LTF_DIR)/src/LTF_Tools.cxx
 ifdef WITH_ROOT
-SRC+=src/LTF_ROOTTools.cxx
+SRC+=$(LTF_DIR)/src/LTF_ROOTTools.cxx
 endif
 
 ifeq (,$(wildcard $(EIGEN_INCLUDE)/Eigen/Eigen))
@@ -37,43 +41,47 @@ endif
 all:
 	$(MAKE) slib
 	$(MAKE) bin
+	$(MAKE) include
 
 
 ###########################################################
 # libraries 
 slib:
-	@mkdir -p $(@D)/lib 
-	$(CXX) -shared -o lib/libLTF.so $(SRC) -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I. -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) $(ROOTLIBS) 
+	@mkdir -p $(@D)/$(BUILD_DIR)/lib 
+	$(CXX) -shared -o $(BUILD_DIR)/lib/libLTF.so $(SRC) -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I$(LTF_DIR)/include -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) $(ROOTLIBS) 
 
 root-slib:
-	root -b -q src/LTF.cxx+
+	root -b -q $(LTF_DIR)/src/LTF.cxx+
 
 
 ###########################################################
 # programs
-EXAMPLE_DIR=examples
-programs =  ${EXAMPLE_DIR}/example_CMSinclusivejets_NN30_BRSSWpaper 
-programs += ${EXAMPLE_DIR}/example_CMSinclusivejets_MSTW_CMSpaper
-programs += ${EXAMPLE_DIR}/example1_LTF_gaus
-programs += ${EXAMPLE_DIR}/example1_LTF_gaus_NoROOT
-programs += ${EXAMPLE_DIR}/example2_LTF_gaus2D
-programs += ${EXAMPLE_DIR}/example2_LTF_gaus2D_NoROOT
-programs += ${EXAMPLE_DIR}/example3_LTF_gaus_sigma
+programs =  $(EXAMPLE_DIR)/example_CMSinclusivejets_NN30_BRSSWpaper 
+programs += $(EXAMPLE_DIR)/example_CMSinclusivejets_MSTW_CMSpaper
+programs += $(EXAMPLE_DIR)/example1_LTF_gaus
+programs += $(EXAMPLE_DIR)/example1_LTF_gaus_NoROOT
+programs += $(EXAMPLE_DIR)/example2_LTF_gaus2D
+programs += $(EXAMPLE_DIR)/example2_LTF_gaus2D_NoROOT
+programs += $(EXAMPLE_DIR)/example3_LTF_gaus_sigma
 bin: $(programs)
 
 $(programs): %: %.cxx
-	@mkdir -p bin 
-	$(CXX) $< -o bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wno-unused-variable -Wl,-rpath,$(PWD)/lib -std=gnu++17 -I. -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) -Llib/ -lLTF -lstdc++ $(ROOTLIBS)
+	@mkdir -p $(BUILD_DIR)/bin 
+	$(CXX) $< -o $(BUILD_DIR)/bin/$(notdir $@) -O0 -g -Wall -Wno-sign-compare  -Wno-unused-variable -Wl,-rpath,$(BUILD_DIR)/lib -std=gnu++17 -I$(LTF_DIR)/include -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) -L$(BUILD_DIR)/lib -lLTF -lstdc++ $(ROOTLIBS)
 
+
+include:
+	@cp -rf $(LTF_DIR)/include $(BUILD_DIR)/.
 
 ###########################################################
 # cleanup
 clean:
-	rm lib/libLTF.so
-	rm -rf lib/libLTF.so.dSYM
-	rm -rf bin/*.dSYM
-	rm bin/*
-
+	rm $(BUILD_DIR)/lib/libLTF.so
+	rm -rf $(BUILD_DIR)/lib/libLTF.so.dSYM
+	rm -rf $(BUILD_DIR)/bin/*.dSYM
+	rm $(BUILD_DIR)/bin/*
+	rm -rf $(BUILD_DIR)/include
+	rm -rf $(BUILD_DIR)
 
 .PHONY: all root-slib clean
 
