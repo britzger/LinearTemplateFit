@@ -35,6 +35,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <memory>
+#include "TDecompChol.h"
 
 using namespace std;
 
@@ -84,9 +85,9 @@ void LTF::AddError(const std::string& name, const std::vector<std::vector<double
          vect.push_back(v2);
    if ( constr == LTF::Uncertainty::External ) {
       fVsExt[name].ResizeTo(cov.size(),cov.size());
-      fVsExt[name] = TMatrixD(cov.size(),cov.size(),&vect[0]);
+      fVsExt[name] = TMatrixDSym(cov.size(),&vect[0]);
    } else {
-      fVs.push_back(make_pair(name,TMatrixD(cov.size(),cov.size(),&vect[0])));
+      fVs.push_back(make_pair(name,TMatrixDSym(cov.size(),&vect[0])));
       if ( constr == LTF::Uncertainty::Unconstrained )
          cout<<"Warning! Uncorrelated error sources or covariance matrices cannot be 'unconstrained'. using 'constrained' instead.."<<endl; 
    }
@@ -570,7 +571,7 @@ TMatrixD LTF::LiTeFit::McApprox(int mPolN, int mOrdInfrc, const TVectorD& aexp0)
 //! Input are all covariance matrices in V
 //! Note: at least one (uncorrelated) uncertainty must be 
 //! present in the fit
-TMatrixD LTF::LiTeFit::W() const {
+TMatrixDSym LTF::LiTeFit::W() const {
    // Calculate inverse covariance matrix W
    if ( Vs.size() == 0 ) { 
       std::cout<<"Error! No uncorrelated or stat. uncertainty specified. Please use AddError()."<<std::endl;
@@ -578,12 +579,12 @@ TMatrixD LTF::LiTeFit::W() const {
    }
    // TMatrixD Vsum(Vs.begin()->second.GetNrows(),Vs.begin()->second.GetNcols()); Vsum.Zero();
    // for ( auto& [name,V] : Vs ) Vsum += V;
-   TMatrixD Vsum = LTF::VSum(Vs);
+   TMatrixDSym Vsum = LTF::VSum(Vs);
    // if ( Vsum.Determinant() < 1.e-8 ) {
    //    cout<<"Warning! Determinant of matrix V is very small! "<<endl;
    //    cout<<"Printing matrix Vsum"<<endl<<Vsum<<endl<<endl;
    // }
-   return Vsum.Invert();
+   return TDecompChol(Vsum).Invert();
 }
 
 
@@ -616,7 +617,7 @@ void LTF::LiTeFit::PrintFull() const {
       for ( auto& [name,s] : DeltaSysY )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
       for ( auto& [name,s] : DeltaSysA )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
    }
-   TMatrixD V = VFit();
+   TMatrixDSym V = VFit();
    if ( ahat.GetNrows() > nPar ) {
       std::cout<<std::endl;
       std::cout<<"  Nuisance parameters       ";
@@ -729,7 +730,7 @@ void LTF::LiTeFit::ApplyGamma(std::map<std::string,TVectorD>& Delta) const {
 }
 
 // -------------------------------------------------------------------- //
-void LTF::LiTeFit::ApplyGamma(std::map<std::string,TMatrixD>& VMat) const {
+void LTF::LiTeFit::ApplyGamma(std::map<std::string,TMatrixDSym>& VMat) const {
    // apply gamma factor to the uncertainties
    for ( auto& [name,V] : VMat ) {    // covariance matrices
       for ( size_t i = 0 ; i<Gamma.size() ;i++ ) { // apply gamma factor
@@ -1029,8 +1030,8 @@ TVectorD LTF::LiTeFit::ComputeNewtonEstimator(int mPolN, int nInfrc, const TVect
    //cout<<"Hesse: "<<endl<<Hesse<<endl; 
    
    // --- calculate final results
-   TVectorD diff = -1.*TMatrixD(TMatrixD::kInverted,Hesse)*Grad;
-   TVectorD diffApprox = -1.*TMatrixD(TMatrixD::kInverted,HesseApprox)*Grad; // this is equivalent to the taylor approximation
+   TVectorD diff = -1.*TDecompChol(Hesse).Invert()*Grad;
+   TVectorD diffApprox = -1.*TDecompChol(HesseApprox).Invert()*Grad; // this is equivalent to the taylor approximation
    double          chi2aprox = Grad*diff + 0.5*Hesse.Similarity(diff);
    if ( nInfrc==1 ) EDM21_chisq = chi2aprox; // keep it for printing
 
@@ -1087,7 +1088,7 @@ TVectorD LTF::LiTeFit::ComputeLinearTemplateFit ( int mPolN, int mOrdInfrc,  con
 
 
    // calculate matrix of uncertainies: W, S and E
-   TMatrixD W = this->W();
+   TMatrixDSym W = this->W();
    TMatrixD E = TMatrixD(nParEps,nParEps); E.Zero();
    TMatrixD S(Dt.GetNrows(),this->Sys.size());
    int j=0;
@@ -1243,8 +1244,8 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const TVectorD& aexp) 
 
    //TMatrixD  Mc = this->Mc(1,0) ; // linear template fit
    TMatrixD  Mc = this->McApprox(mPolN,mOrdInfrc,aexp) ; // get linearised (non-linear) model
-   TMatrixD  W  = this->W()  ;
-   
+   TMatrixDSym  W  = this->W()  ;
+
    // --- useful quantities
    const int nPar           = M.GetNcols()-1;
    const int nParEps        = nPar + this->Sys.size();
@@ -1254,7 +1255,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const TVectorD& aexp) 
    TMatrixD Mtil     = TMatrixD(TMatrixD::kTransposed,Mc.GetSub(1,Mc.GetNrows()-1,0,Mc.GetNcols()-1)); // ytil(Dt.rows(),nPar)
    TMatrixD Ytil_tmp = Y * Mtil;
    Ytil.ResizeTo(Ytil_tmp); Ytil = Ytil_tmp; // ytil(Dt.rows(),nPar)
-   
+
    // construct matrix YtS 
    TMatrixD E        = TMatrixD(nParEps,nParEps); E.Zero();
    TMatrixD Es       = TMatrixD(this->Sys.size(),this->Sys.size()); Es.Zero();
@@ -1294,7 +1295,6 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const TVectorD& aexp) 
 
 
    cout<<"LTF::DoLiTeFit(). Fit done. Result:  "<<this->a0<< std::flush;
-
    
    // ---- cross check, alternative implementation
    //EDDY
@@ -1324,7 +1324,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const TVectorD& aexp) 
    // --- Error propagation systematic errors
    const TMatrixD F_T = TMatrixD(TMatrixD::kTransposed,F);
    for ( const auto& [name,V] : this->Vs ) {      // uncorr./cov uncertainties
-      TMatrixD Vsource_tmp = F * V * F_T;
+      TMatrixDSym Vsource_tmp = TMatrixDSym( F.GetNrows(), (F * V * F_T ).GetMatrixArray() );
       Vsource[name].ResizeTo(Vsource_tmp); Vsource[name] = Vsource_tmp;
    }
    for ( const auto& [name,s] : this->Sys ) {    // corr. uncertainties
@@ -1332,7 +1332,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const TVectorD& aexp) 
       DeltaSys[name].ResizeTo(DeltaSys_tmp); DeltaSys[name] = DeltaSys_tmp;
    }
    for ( const auto& [name,V] : this->VsExt ) { // external uncorr./cov uncertainties
-      TMatrixD Vsource_tmp = F * V * F_T;
+      TMatrixDSym Vsource_tmp = TMatrixDSym( F.GetNrows(), ( F * V * F_T ).GetMatrixArray() );
       Vsource[name].ResizeTo(Vsource_tmp); Vsource[name] = Vsource_tmp;
    }
    for ( const auto& [name,s] : this->SysExt ) {     // corr. uncertainties
@@ -1590,8 +1590,8 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const TVectorD& aexp) 
 
    // --- (pseudo-)nuisance paramters for external uncertainties
    if ( this->SysExt.size() ) {
-      TMatrixD Vtot = LTF::VSum(Vs,Sys);
-      TMatrixD Vinv = TMatrixD(TMatrixD::kInverted,Vtot);
+      TMatrixDSym Vtot = LTF::VSum(Vs,Sys);
+      TMatrixDSym Vinv = TDecompChol(Vtot).Invert();
       for ( const auto& [name,s] : this->SysExt )  {
          double n = s*(W*resid);
          double dn = sqrt(Vinv.Similarity(s));
@@ -1755,8 +1755,8 @@ void LTF::AddCorrelatedError(const std::string& name, vector<double> error, LTF:
 // -------------------------------------------------------------------- //
 //! \brief calculate covariance matrix from an uncertainty
 //static 
-TMatrixD LTF::GetV_Delta(const TVectorD& d, double corr) { 
-   TMatrixD ret = TMatrixD(d.GetNrows(),d.GetNrows()); ret.Zero();
+TMatrixDSym LTF::GetV_Delta(const TVectorD& d, double corr) { 
+   TMatrixDSym ret = TMatrixDSym(d.GetNrows()); ret.Zero();
    if ( corr == 1 ) {
      ret.Rank1Update(d);
       return ret;
@@ -1775,10 +1775,10 @@ TMatrixD LTF::GetV_Delta(const TVectorD& d, double corr) {
 //! \param Vs        Covariance matrices, i.e. uncorr. and/or cov. uncertainties
 //! \param DeltaSys  correlated systematic uncertainty
 //static 
-TMatrixD LTF::VSum( const std::map<std::string,TMatrixD>& Vs, const std::map<std::string,TVectorD>& DeltaSys ) {
+TMatrixDSym LTF::VSum( const std::map<std::string,TMatrixDSym>& Vs, const std::map<std::string,TVectorD>& DeltaSys ) {
    if ( Vs.empty() && DeltaSys.empty() ) std::cerr << "LTF::VSum(). No input given!"<<endl;
    int n = Vs.size() ? Vs.begin()->second.GetNrows() : Vs.begin()->second.GetNrows();
-   TMatrixD ret = TMatrixD(n,n); ret.Zero();
+   TMatrixDSym ret = TMatrixDSym(n); ret.Zero();
    for ( const auto& V : Vs )       ret += V.second;
    for ( const auto& v : DeltaSys ) ret += LTF::GetV_Delta(v.second,1);
    return ret;
@@ -1791,9 +1791,9 @@ TMatrixD LTF::VSum( const std::map<std::string,TMatrixD>& Vs, const std::map<std
 //! \param Vs        Covariance matrices, i.e. uncorr. and/or cov. uncertainties
 //! \param Sys       Correlated systematic uncertainties
 //static 
-TMatrixD LTF::VSum( const std::vector<std::pair<std::string,TMatrixD > >& Vs, const std::vector<std::pair<std::string,TVectorD > >& Sys ) {
+TMatrixDSym LTF::VSum( const std::vector<std::pair<std::string,TMatrixDSym > >& Vs, const std::vector<std::pair<std::string,TVectorD > >& Sys ) {
    int n = Vs.size() ? Vs.begin()->second.GetNrows() : 0;
-   TMatrixD ret = TMatrixD( n, n); ret.Zero();
+   TMatrixDSym ret = TMatrixDSym(n); ret.Zero();
    if ( Vs.empty() ) {
       std::cerr << "LTF::VSum(). No input given!"<<endl;
       return ret;
@@ -1807,13 +1807,13 @@ TMatrixD LTF::VSum( const std::vector<std::pair<std::string,TMatrixD > >& Vs, co
 // -------------------------------------------------------------------- //
 //! \brief Calculate correlation matrix from given covariacne matrix V
 //static 
-TMatrixD LTF::Cov_to_Cor(const TMatrixD& V) {
+TMatrixDSym LTF::Cov_to_Cor(const TMatrixDSym& V) {
    if ( V.GetNrows() != V.GetNcols() ) {
       std::cerr<<"Error! LTF::Cov_to_Cor(). This is not a diagonal matrix."<<std::endl;
       exit(1);
    }
    size_t n = V.GetNcols();
-   TMatrixD Rho = TMatrixD(n,n); Rho.Zero();
+   TMatrixDSym Rho = TMatrixDSym(n); Rho.Zero();
    std::vector<double> delta;
    for ( size_t i = 0 ; i<n ; i++ ) delta.push_back(sqrt(V(i,i)));
    for ( size_t i = 0 ; i<n ; i++ ) {

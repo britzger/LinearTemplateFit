@@ -138,7 +138,7 @@ TH1D* LTF_ROOTTools::MakeHistogram(int nEvents, int seed, double mean, double si
 //!
 //!  make a histogram from an Eigen::Vector for plotting purposes
 //!
-TH1D* LTF_ROOTTools::MakeHistogram(const TVectorD& values, vector<double> bins, const std::vector<std::pair<std::string,TMatrixD > >& V ) 
+TH1D* LTF_ROOTTools::MakeHistogram(const TVectorD& values, vector<double> bins, const std::vector<std::pair<std::string,TMatrixDSym > >& V ) 
 {
    TH1D* hist = bins.empty() ?
       new TH1D("hist","hist",values.GetNoElements(),0,values.GetNoElements() ) :

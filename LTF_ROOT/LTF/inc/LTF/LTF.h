@@ -35,6 +35,7 @@
 
 #include "TVectorD.h"
 #include "TMatrixD.h"
+#include "TMatrixDSym.h"
 #include <string>
 #include <map>
 #include <unordered_map>
@@ -86,9 +87,9 @@ public:
       TMatrixD Y ;                                                               //!< Matrix Y (templates)
       TMatrixD X ;                                                               //!< Matrix X (templates) [only required for error propagation]
       TMatrixD A ;                                                               //!< Response matrix (optional) [only used for (relative) error propagation]
-      std::vector<std::pair<std::string,TMatrixD > >        Vs    ;              //!< (uncor./Cov) uncertainties
+      std::vector<std::pair<std::string,TMatrixDSym > >     Vs    ;              //!< (uncor./Cov) uncertainties
       std::vector<std::pair<std::string,TVectorD > >        Sys   ;              //!< (correlated) systematic uncertainties 
-      std::map<std::string,TMatrixD >                       VsExt ;              //!< external (uncor./Cov) uncertainties
+      std::map<std::string,TMatrixDSym >                    VsExt ;              //!< external (uncor./Cov) uncertainties
       std::map<std::string,TVectorD >                       SysExt;              //!< external (correlated) systematic uncertainties
       std::map<std::string,LTF::Uncertainty>                SysIsConstr;         //!< uncertainty specification for Sys
       std::map<std::string,TMatrixD >                       SysY;                //!< uncertainty of the templates
@@ -113,9 +114,9 @@ public:
       TVectorD ahat_errorTmpl;                                                   //!< Uncertainties from templates
       TVectorD ahat_errorRespMat;                                                //!< Uncertainties from response matrix
       TVectorD TheoFit;                                                          //!< best-fit theory predictions
-      std::map<std::string,TMatrixD> Vsource;                                    //!< Covariance matrices from uncorr. and cov.  uncertainties 
+      std::map<std::string,TMatrixDSym> Vsource;                                 //!< Covariance matrices from uncorr. and cov.  uncertainties 
       std::map<std::string,TVectorD> DeltaSys;                                   //!< Correlated systematic uncertainties
-      std::map<std::string,TMatrixD> VsourceExt;                                 //!< Covariance matrices from 'external' uncorr. and cov.  uncertainties
+      std::map<std::string,TMatrixDSym> VsourceExt;                              //!< Covariance matrices from 'external' uncorr. and cov.  uncertainties
       std::map<std::string,TVectorD> DeltaSysExt;                                //!< 'external' correlated systematic uncertainty
       std::map<std::string,TVectorD> DeltaSysY;                                  //!< systematic uncertainty from the templates
       std::map<std::string,TVectorD> DeltaSysA;                                  //!< systematic uncertainty from the response matrix
@@ -138,9 +139,9 @@ public:
       TMatrixD Mc(int nPow=1, int nInfrc=0) const;                               //!< \brief calculated matrix M^+ from matrix M
       TVectorD a0pow(int nPow, int nInfrc, const TVectorD& ahat) const;          //!< \brief calculated vector (a0,a0^2,infrc) to be multiplied with Mc
       TMatrixD McApprox(int powmax, int intfrc, const TVectorD& ahat) const;     //!< \brief calculated approximate matrix M^+ from non-linear matrix M^+
-      TMatrixD W() const;                                                        //!< \brief calculate inverse covariance matrix from V's
-      TMatrixD VFit() const { return LTF::VSum(Vsource,DeltaSys); }              //!< \brief calculate covariance matrix of all uncertainties included in fit
-      TMatrixD VExt() const { return LTF::VSum(VsourceExt,DeltaSysExt); }        //!< \brief calculate covariance matrix of all uncertainties included in fit
+      TMatrixDSym W() const;                                                     //!< \brief calculate inverse covariance matrix from V's
+      TMatrixDSym VFit() const { return LTF::VSum(Vsource,DeltaSys); }           //!< \brief calculate covariance matrix of all uncertainties included in fit
+      TMatrixDSym VExt() const { return LTF::VSum(VsourceExt,DeltaSysExt); }     //!< \brief calculate covariance matrix of all uncertainties included in fit
       bool GetLogNormal() const { return LogNormal; }                            //!< \brief return boolean if fit was performed with relative uncertainties
       TVectorD CalculatePrediction(double v ) const {                            //!< \brief Calculate the prediction as it is used by the fit for a given parameter value
          return CalculatePrediction(std::vector<double>{v});}
@@ -155,7 +156,7 @@ public:
 
    protected:
       void ApplyGamma(std::map<std::string,TVectorD>& Delta) const;              //!< \brief apply gamma factor to the uncertainties
-      void ApplyGamma(std::map<std::string,TMatrixD>& VMat) const;               //!< \brief apply gamma factor to the uncertainties
+      void ApplyGamma(std::map<std::string,TMatrixDSym>& VMat) const;            //!< \brief apply gamma factor to the uncertainties
       bool LogNormal  = false;                                                   //!< Use LogNormal distributed uncertainties, i.e. normal-distibuted relative  uncertainties
       std::vector<std::pair<std::string,TMatrixD> >     SysAX;                   //!< uncertainty of the response matrix when using log-normal
       TVectorD ErrorScale;                                                //!< Reference values for error rescaling (default: data)
@@ -515,10 +516,10 @@ protected:
    TVectorD fDt;                                                              //!< data distribution
    std::vector<std::pair<vector<double>,TVectorD> >         fTmplDistN;       //!< templates
    TMatrixD                                                 fA;               //!< the response matrix (opional)
-   std::vector<std::pair<std::string,TMatrixD > >           fVs;              //!< Covariance matrices
+   std::vector<std::pair<std::string,TMatrixDSym > >        fVs;              //!< Covariance matrices
    std::vector<std::pair<std::string,TVectorD > >           fSys;             //!< correlated (syst.) uncertainty
    std::map<std::string,LTF::Uncertainty>                   fSysIsConstr;     //!< uncertainty specification for fSys
-   std::map<std::string,TMatrixD >                          fVsExt;           //!< Covariance matrices, treated as external
+   std::map<std::string,TMatrixDSym >                       fVsExt;           //!< Covariance matrices, treated as external
    std::map<std::string,TVectorD >                          fSysExt;          //!< correlated uncertainties, treated as external
    std::map<std::string,std::map<vector<double>,TVectorD> > fSysY;            //!< uncertainty of the templates (uncorrelated)
    std::map<std::string,TMatrixD>                           fSysA;            //!< uncertainty of the response matrix (uncorrelated)
@@ -551,19 +552,19 @@ protected:
 public:
 
    //! \brief calculate uncertainty from a covariance matrix
-   static TVectorD GetDelta_V(const TMatrixD& V) { 
+   static TVectorD GetDelta_V(const TMatrixDSym& V) { 
       //??
       TVectorD diag = TMatrixDDiag_const(V); diag.Sqrt();
       return diag;
    }
 
    //! \brief calculate covariance matrix from an uncertainty
-   static TMatrixD GetV_Delta(const TVectorD& d, double corr);
+   static TMatrixDSym GetV_Delta(const TVectorD& d, double corr);
 
    //! \brief calculate covariance matrices from (systematic) shifts
    template< class T >
-   static std::map<std::string,TMatrixD> GetV_DeltaSys(const T& DeltaSys) {     
-      std::map<std::string,TMatrixD> ret;
+   static std::map<std::string,TMatrixDSym> GetV_DeltaSys(const T& DeltaSys) {     
+      std::map<std::string,TMatrixDSym> ret;
       for ( auto& s : DeltaSys ) ret[s.first] = LTF::GetV_Delta(s.second,1);
       return ret; 
    }
@@ -579,15 +580,15 @@ public:
    //! \brief Calculate covariance matrix as sum of individual matrices and systematic shifts
    //! \param Vs        Covariance matrices, i.e. uncorr. and/or cov. uncertainties
    //! \param DeltaSys  correlated systematic uncertainty
-   static TMatrixD VSum( const std::map<std::string,TMatrixD>& Vs, const std::map<std::string,TVectorD>& DeltaSys );
+   static TMatrixDSym VSum( const std::map<std::string,TMatrixDSym>& Vs, const std::map<std::string,TVectorD>& DeltaSys );
 
    //! \brief Calculate covariance matrix as sum of individual matrices and systematic shifts
    //! \param Vs        Covariance matrices, i.e. uncorr. and/or cov. uncertainties
    //! \param Sys       correlated systematic uncertainties
-   static TMatrixD VSum( const std::vector<std::pair<std::string,TMatrixD > >& Vs, const std::vector<std::pair<std::string,TVectorD > >& Sys = std::vector<std::pair<std::string,TVectorD > >() );
+   static TMatrixDSym VSum( const std::vector<std::pair<std::string,TMatrixDSym > >& Vs, const std::vector<std::pair<std::string,TVectorD > >& Sys = std::vector<std::pair<std::string,TVectorD > >() );
 
    //! \brief Calculate correlation matrix from given covariacne matrix V
-   static TMatrixD Cov_to_Cor(const TMatrixD& V);
+   static TMatrixDSym Cov_to_Cor(const TMatrixDSym& V);
 
    //! \brief Calculate an Eigen-matrix from std::vector<std::vector<>>. T=double
    static TMatrixD Std_to_Mat(const std::vector<std::vector<double> >& A);
