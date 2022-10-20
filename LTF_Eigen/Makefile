@@ -51,7 +51,7 @@ slib:
 	$(CXX) -shared -o $(BUILD_DIR)/lib/libLTF.so $(SRC) -O0 -fPIC -g -Wall -Wno-unused-variable -std=gnu++17 -I$(LTF_DIR)/include -I$(EIGEN_INCLUDE) $(ROOTINCLUDES) $(ROOTLIBS) 
 
 root-slib:
-	root -b -q $(LTF_DIR)/src/LTF.cxx+
+	export ROOT_INCLUDE_PATH=$(LTF_DIR)/include:$(EIGEN_INCLUDE) && root -b -q $(LTF_DIR)/src/LTF.cxx+
 
 
 ###########################################################
