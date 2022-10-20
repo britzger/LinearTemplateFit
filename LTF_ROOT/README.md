@@ -64,7 +64,7 @@ Thus, first call once:
 ```
 ln -s examples/data .
 ```
-Then you can directly execute the alpha_s-fits from the (LTF paper)[https://doi.org/10.1140/epjc/s10052-022-10581-w]
+Then you can directly execute the alpha_s-fits from the [LTF paper](https://doi.org/10.1140/epjc/s10052-022-10581-w)
 ```        
 build/bin/example_CMSinclusivejets_MSTW_CMSpaper
 build/bin/example_CMSinclusivejets_MSTW_CMSpaper
