@@ -72,7 +72,7 @@ int example_ATLAS_topmass() {
    templates[175] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/Ana_S3beta_Cluster__mtop_175_H_1246.root")->Get<TH1D>(histname);
 
    for ( auto [MM,hist] : templates ) hist->Rebin(iRebin);
-   TH1D* data      = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data
+   TH1D* data      = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
    data -> Rebin(iRebinData);
 
    data->SetLineColor(kBlack);
@@ -104,35 +104,46 @@ int example_ATLAS_topmass() {
    data->Sumw2(); // only for now
    TH1D* data_ref = TFile::Open(datauncfile)->Get<TH1D>(histnamedata);
    data_ref->Print("All");
-   TFile *file = new TFile(datauncfile);
-   TObject *obj = NULL;
-   TKey *key = NULL;
-   TIter next( file->GetListOfKeys());
-   while ((key = (TKey *) next())) {
-      //printf(" found object:%s\n",key->GetName());
-      obj = file->Get<TObject>(key->GetName()); // copy object to memory
-      TH1D* hist = NULL;
+   //TFile *file = TFile::Open(datauncfile);
+
+   std::unique_ptr<TFile> file(TFile::Open(datauncfile));
+
+   if (!file || file->IsOpen() == kFALSE) {
+      std::cerr << "Error: Couldn't open the file!" << std::endl;
+      return 1;
+   }
+
+   // Get the list of keys in the file (this represents all objects)
+   TIter next(file->GetListOfKeys());
+   TObject *obj;
+   TKey* key;
+   // Loop over all keys (objects) in the file
+   while ((key = (TKey*) next())) {
+      obj = file->Get<TObject>(key->GetName());
       if (obj->InheritsFrom("TH1D")) {
-         hist = (TH1D*) obj;
-         string title = hist->GetTitle();
-         if ((title.find("unfolding_mbl_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-            cout<<title<<endl;
-            hist->Add(data_ref, -1);
-            //hist->Divide(data_ref);
-            hist->Print("all");
-            vector<double> tmp;
-            double* entries = hist->GetArray();
-            for (int i=1; i< hist->GetNbinsX(); i++) {
-               cout<<"Added uncertainty: "<<entries[i]<<" bin content "<<hist->GetBinContent(i)<<" nbins "<<hist->GetNbinsX()<<endl;
-               tmp.push_back(hist->GetBinContent(i));
+         std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
+         if (hist) {
+            string title = hist->GetTitle();
+            if ((title.find("unfolding_error_mbl_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
+               cout<<title<<endl;
+               //hist->Add(data_ref, -1);
+               vector<double> tmp;
+               double* entries = hist->GetArray();
+               for (int i=1; i< hist->GetNbinsX(); i++) {
+                  cout<<"Added uncertainty: "<<entries[i]<<" bin content "<<hist->GetBinContent(i)<<" nbins "<<hist->GetNbinsX()<<endl;
+                  tmp.push_back(hist->GetBinContent(i));
+               }
+               ltf.AddErrorRelative(title, tmp);
+               //ltf.AddCorrelatedError(title, tmp);
             }
-            ltf.AddCorrelatedError(title, tmp);
+            else {
+               continue;
+            }
          }
       }
    }
 
-   ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
-
+   //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
 
    // for ( const auto& s : shiftsnuisance ) ltf.AddError("",N,s->GetArray()+1,1.);
    // for ( const auto& s : shifts ) ltf.AddError("",N,s->GetArray()+1,1.);
