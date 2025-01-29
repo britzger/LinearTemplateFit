@@ -609,13 +609,13 @@ void LTF::LiTeFit::PrintFull() const {
    std::cout<<std::endl;
    for ( int i = 0 ; i<nPar ; i++ ) {
       printf("  LTF. Result[%d]:   %f\n",i,ahat(i));
-      for ( auto& [name,V] : Vsource )         printf("                             +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
-      for ( auto& [name,v] : DeltaSys )        printf("                             +/- % 8.6f (%s)\n", v(i), name.c_str());
+      for ( auto& [name,V] : Vsource )         printf("       1                      +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
+      for ( auto& [name,v] : DeltaSys )        printf("       2                      +/- % 8.6f (%s)\n", v(i), name.c_str());
       std::cout<<std::endl; 
-      for ( auto& [name,V] : VsourceExt )      printf("                             +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
-      for ( auto& [name,v] : DeltaSysExt )     printf("                             +/- % 8.6f (%s)\n", v(i), name.c_str());
-      for ( auto& [name,s] : DeltaSysY )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
-      for ( auto& [name,s] : DeltaSysA )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
+      for ( auto& [name,V] : VsourceExt )      printf("       3                      +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
+      for ( auto& [name,v] : DeltaSysExt )     printf("       4                      +/- % 8.6f (%s)\n", v(i), name.c_str());
+      for ( auto& [name,s] : DeltaSysY )       printf("       5                      +/- % 8.6f (%s)\n", s(i), name.c_str());
+      for ( auto& [name,s] : DeltaSysA )       printf("       6                      +/- % 8.6f (%s)\n", s(i), name.c_str());
    }
    TMatrixDSym V = VFit();
    if ( ahat.GetNrows() > nPar ) {

@@ -200,7 +200,8 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       "plots/LTFlog_plots.ps" :
       "plots/LTF_plots.ps";
    c1.Print( (string(ps_name)+"[").c_str() );
-
+   bool doLogPlot = true;
+   if ( doLogPlot) c1.cd()->SetLogy();
    // ---------------------------------------------- //
    // main plot
    // ---------------------------------------------- //
@@ -209,16 +210,23 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       if ( iref == 0 ) {
          templates[0]->SetTitle(("Linear Template Fit;"+observablename+";"+yaxistitle).c_str());
          templates[0]->SetLineColor(kRed+1);
-         if ( templates[0]->GetMaximum()>0 )templates[0]->SetMinimum(0);
-         if ( !fit.GetLogNormal() ) 
-            templates[0]->SetMaximum(templates[0]->GetMaximum()*1.7);
+         if ( templates[0]->GetMaximum()>0 && doLogPlot ){
+            templates[0]->SetMinimum(0.0000001); //was 0 johannes
+            templates[0]->SetMaximum(templates[0]->GetMaximum()*60);
+         }
+         else if ( templates[0]->GetMaximum()>0 && !doLogPlot ){
+            templates[0]->SetMinimum(0);
+            if ( !fit.GetLogNormal() ) 
+               templates[0]->SetMaximum(templates[0]->GetMaximum()*1.7);
+         }
+
          // else 
          //    templates[0]->SetMaximum(templates[0]->GetMaximum()*3.); 
          templates[0]->SetLineWidth(3);
          templates[0]->DrawClone("hist");
       }
       else if ( iref==reference_values.GetNoElements()-1) {
-         if ( templates[0]->GetMaximum()>0 ) templates[iref]->SetFillColorAlpha(kBlue,0.15);
+         //if ( templates[0]->GetMaximum()>0 ) templates[iref]->SetFillColorAlpha(kBlue,0.15); //johannes
          templates[iref]->SetLineColor(kBlue+2);
          templates[iref]->SetLineWidth(3);
          templates[iref]->Draw("histsame");
@@ -229,7 +237,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          templates[iref]->Draw("histsame");
       }
    }   
-   if ( templates[0]->GetMaximum()>0 )templates[0]->SetFillColorAlpha(kRed,0.15);
+   //if ( templates[0]->GetMaximum()>0 )templates[0]->SetFillColorAlpha(kRed,0.15);//johannes
    templates[0]->Draw("histsame");
 
    data->SetMarkerStyle(20);
@@ -255,6 +263,68 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 
    c1.Print(ps_name);
    c1.Print("plots/LTF_plot.pdf");
+
+   // ---------------------------------------------- //
+   // print relative size of all errors //Johannes
+   // ---------------------------------------------- //
+   c1.Clear();
+   c1.SetLogy(0);
+   // set margins?
+
+   // map for all histos: Make one histo for each summary
+   
+   TH1D* unc_single  = new TH1D("Uncertainty_single","Uncertainty_single",fit.Vsource.size(), 0, fit.Vsource.size());
+   //TH1D* unc_summray = new TH1D("Uncertainty_summary","Uncertainty_summary",m_unc_summary.size(), 0, m_unc_summary.size());
+
+   //std::map<std::string, std::double> m_unc_summary{};
+   string lepton_uncertainties[] = {"EG_RESOLUTION_ALL", 
+                                    "EG_SCALE_ALL",
+                                    "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR", 
+                                    "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
+                                    "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR", 
+                                    "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR",
+                                    "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR",
+                                    "MUON_SAGITTA_DATASTAT", 
+                                    "MUON_SAGITTA_RESBIAS",
+                                    "MUON_EFF_BADMUON_SYS", 
+                                    "MUON_EFF_ISO_STAT", 
+                                    "MUON_EFF_ISO_SYS",
+                                    "MUON_EFF_RECO_STAT", 
+                                    "MUON_EFF_RECO_SYS", 
+                                    "MUON_EFF_TTVA_STAT", 
+                                    "MUON_EFF_TTVA_SYS",
+                                    "MUON_EFF_TrigStatUncertainty",
+                                    "MUON_EFF_TrigSystUncertainty"};
+   
+   TH1D* unc_single  = new TH1D("lepton_uncertainty","lepton_uncertainty",lepton_uncertainties.size(), 0, lepton_uncertainties.size());
+
+
+   for ( const string &source: lepton_uncertainties ) {
+      double test = std::sqrt(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(0,0));
+      cout<<source<<" "<<test<<endl;
+   }
+
+
+   int nPar = fit.M.GetNcols()-1;
+   //for ( int i = 0 ; i<nPar ; i++ ) {
+      int bin = 1;
+      for ( auto& [name,V] : fit.Vsource ) {
+         //printf("  myprintout  +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
+         std::string prefix = "unfolding_error_mbl_selected_direct_envelope_";
+         std::string suffix = "__1up";
+         std::string title = name.substr(prefix.length());
+         title.substr(0, title.length()-suffix.length());
+         cout<<title<<endl;
+
+         unc_single->SetBinContent(bin, std::sqrt(V(0,0))); //std::sqrt(V(i,i)));
+         unc_single->GetXaxis()->SetBinLabel(bin, title.c_str());
+         bin++;
+      }
+      double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_WMASS_VAR_signal__1up")->second(0,0);
+      cout<<"WMASS_VAR_signal__1up "<<std::sqrt(error)<<endl;
+
+   unc_single->Draw("B"); //Draw car chart
+   c1.Print(ps_name);
 
 
    // ---------------------------------------------- //
