@@ -306,7 +306,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
                                        "JET_EffectiveNP_Modelling1",
                                        "JET_EffectiveNP_Modelling2",
                                        "JET_EffectiveNP_Modelling3",
-                                       "JET_EffectiveNP_Modelling4", 
+                                       "JET_EffectiveNP_Modelling4",
                                        "JET_EffectiveNP_Statistical1",
                                        "JET_EffectiveNP_Statistical2",
                                        "JET_EffectiveNP_Statistical3",
@@ -319,33 +319,34 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
                                        "JET_EtaIntercalibration_NonClosure_negEta",
                                        "JET_EtaIntercalibration_NonClosure_posEta",
                                        "JET_EtaIntercalibration_TotalStat",
-                                       "JET_Flavor_Composition_prop", 
+                                       "JET_Flavor_Composition_prop",
                                        "JET_Flavor_Response_prop",
                                        "JET_Pileup_OffsetMu",
-                                       "JET_Pileup_OffsetNPV", 
+                                       "JET_Pileup_OffsetNPV",
                                        "JET_Pileup_PtTerm",
                                        "JET_Pileup_RhoTopology",
                                        "JET_PunchThrough_MC16"};
-
-   vector<string> jer_uncertainties = {"JET_JER_DataVsMC_MC16",
-                                       "JET_JER_EffectiveNP_1",
-                                       "JET_JER_EffectiveNP_2",
-                                       "JET_JER_EffectiveNP_3",
-                                       "JET_JER_EffectiveNP_4",
-                                       "JET_JER_EffectiveNP_5",
-                                       "JET_JER_EffectiveNP_6",
-                                       "JET_JER_EffectiveNP_7",
-                                       "JET_JER_EffectiveNP_8",
-                                       "JET_JER_EffectiveNP_9",
-                                       "JET_JER_EffectiveNP_10",
-                                       "JET_JER_EffectiveNP_11",
-                                       "JET_JER_EffectiveNP_12"};
+   
+   vector<string> jer_uncertainties = {"JET_JER_DataVsMC_MC16_PseudoData",
+                                       "JET_JER_EffectiveNP_1_PseudoData",
+                                       "JET_JER_EffectiveNP_2_PseudoData",
+                                       "JET_JER_EffectiveNP_3_PseudoData",
+                                       "JET_JER_EffectiveNP_4_PseudoData",
+                                       "JET_JER_EffectiveNP_5_PseudoData",
+                                       "JET_JER_EffectiveNP_6_PseudoData",
+                                       "JET_JER_EffectiveNP_7_PseudoData",
+                                       "JET_JER_EffectiveNP_8_PseudoData",
+                                       "JET_JER_EffectiveNP_9_PseudoData",
+                                       "JET_JER_EffectiveNP_10_PseudoData",
+                                       "JET_JER_EffectiveNP_11_PseudoData",
+                                       "JET_JER_EffectiveNP_12restTerm_PseudoData"};
 
    vector<string> jvt_pileup_met_uncertainties = {"JET_JvtEfficiency",
                                                   "PRW_DATASF",
                                                   "MET_SoftTrk_ResoPara",
                                                   "MET_SoftTrk_ResoPerp",
-                                                  "MET_SoftTrk_Scale"};
+                                                  "MET_SoftTrk_Scale",
+                                                  "WMASS_VAR_signal"};
 
    vector<string> b_tagging_uncertainties = {"FT_EFF_Eigen_B_0", 
                                              "FT_EFF_Eigen_B_1",
@@ -367,34 +368,44 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
                                              "FT_EFF_extrapolation",
                                              "FT_EFF_extrapolation_from_charm"};
 
+   // Theory uncertainties
+   vector<string> modelling_uncertainties = {"THEORY_CROSS_SECTION_signal",
+                                             "THEORY_SHOWERING_HERWIG7_signal",
+                                             "THEORY_SCALE_FACTORISATION_signal",
+                                             "THEORY_SCALE_RENORMALISATION_signal", 
+                                             "THEORY_ISR_signal",
+                                             "THEORY_FSR_signal",
+                                             "THEORY_HDAMP_signal",
+                                             "THEORY_PTHARD_signal",
+                                             "THEORY_TOPRECOIL_signal",
+                                             "THEORY_TOP_MASS_signal",
+                                             "THEORY_PDF4LHC_VARIATION_signal",
+                                             "THEORY_DR_DS_signal"};
+   
+   vector<string> bkgd_uncertainties = {"THEORY_CROSS_SECTION_Wjets",
+                                        "THEORY_SCALE_COMBINED_Wjets",
+                                        "THEORY_PDF4LHC_VARIATION_Wjets",
+                                        "THEORY_EWK_Wjets",
+                                        "THEORY_SCALE_COMBINED_multiboson_noW",
+                                        "THEORY_PDF4LHC_VARIATION_multiboson_noW",
+                                        "THEORY_EWK_multiboson_noW",
+                                        "THEORY_CROSS_SECTION_other_top_noWt",
+                                        "FAKES_Electron",
+                                        "FAKES_Muon"};
+
+   vector<string> other_uncertainties = {"STAT_DATA",
+                                         "STAT_MC",
+                                         "LUMINOSITY"};
 
    double lep_err = makeErrorPlot(c1, ps_name, "Lepton uncertainties", fit, lepton_uncertainties);
    double jes_err = makeErrorPlot(c1, ps_name, "JES uncertainties", fit, jes_uncertainties);
    double jer_err = makeErrorPlot(c1, ps_name, "JER uncertainties", fit, jer_uncertainties);
    double jvt_pileup_met_err = makeErrorPlot(c1, ps_name, "JVT+PileUp+MET uncertainties", fit, jvt_pileup_met_uncertainties);
-   double b_tagging_err = makeErrorPlot(c1, ps_name, "b-tagging uncertainties", fit, b_tagging_uncertainties);
-
-   int nPar = fit.M.GetNcols()-1;
-   //for ( int i = 0 ; i<nPar ; i++ ) {
-      int bin = 1;
-      for ( auto& [name,V] : fit.Vsource ) {
-         //printf("  myprintout  +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
-         std::string prefix = "unfolding_error_mbl_selected_direct_envelope_";
-         std::string suffix = "__1up";
-         std::string title = name.substr(prefix.length());
-         title.substr(0, title.length()-suffix.length());
-         cout<<title<<endl;
-         
-         unc_single->SetBinContent(bin, std::sqrt(V(0,0))); //std::sqrt(V(i,i)));
-         unc_single->GetXaxis()->SetBinLabel(bin, title.c_str());
-         bin++;
-      }
-      double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_WMASS_VAR_signal__1up")->second(0,0);
-      cout<<"WMASS_VAR_signal__1up "<<std::sqrt(error)<<endl;
-
-   unc_single->Draw("B"); //Draw car chart
-   c1.Print(ps_name);
-
+   double b_tagging_err      = makeErrorPlot(c1, ps_name, "b-tagging uncertainties", fit, b_tagging_uncertainties);
+   double modelling_err      = makeErrorPlot(c1, ps_name, "modelling uncertainties", fit, modelling_uncertainties);
+   double bkgd_err           = makeErrorPlot(c1, ps_name, "background uncertainties", fit, bkgd_uncertainties);
+   double other_err = makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties);
+   
 
    // ---------------------------------------------- //
    // print linear-functions in every bin
@@ -1203,18 +1214,23 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
    
 }
 
-
 double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties)
 {
+   cout<<"Still fine 1"<<endl;
    TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
    double sum_error = 0;
+   cout<<"Still fine 2"<<endl;
+
    for ( const string &source: uncertainties ) {
+      cout<<"Looking for "<<"unfolding_error_mbl_selected_direct_envelope_"+source+"__1up"<<endl;
       double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(0,0);
       h->Fill(source.c_str(), std::sqrt(error));
       //h_lepton_unc->SetBinContent(ibin, std::sqrt(error));
       //h_lepton_unc->GetXaxis()->SetBinLabel(ibin, source.c_str());
       sum_error += error;
    }
+   cout<<"Still fine 3"<<endl;
+
    h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
    h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
    h->SetBarWidth(0.85);
@@ -1224,8 +1240,11 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
    h->GetXaxis()->SetTickLength(0);
    h->GetXaxis()->LabelsOption("<");
    h->Draw("hbar");
+   cout<<"Still fine 4"<<endl;
+
    c.Print(ps_name.c_str());
    c.Clear();
-   
+   cout<<"Still fine 5"<<endl;
+
    return std::sqrt(sum_error);
 }

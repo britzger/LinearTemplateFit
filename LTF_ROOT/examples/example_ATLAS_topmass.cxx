@@ -146,11 +146,9 @@ int example_ATLAS_topmass() {
             //if ((title.find("unfolding_error_mwhadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
             //if ((title.find("unfolding_error_minimax_whadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
                cout<<title<<endl;
-               //hist->Add(data_ref, -1);
                vector<double> tmp;
                double* entries = hist->GetArray();
                for (int i=1; i< hist->GetNbinsX(); i++) {
-                  cout<<"Added uncertainty: "<<entries[i]<<" bin content "<<hist->GetBinContent(i)<<" nbins "<<hist->GetNbinsX()<<endl;
                   tmp.push_back(hist->GetBinContent(i));
                }
                double corr = 1;
@@ -174,13 +172,6 @@ int example_ATLAS_topmass() {
 
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
-
-   // johannesint nPar = fit.M.GetNcols()-1;
-   // johannesstd::cout<<std::endl;
-   // johannesfor ( int i = 0 ; i<nPar ; i++ ) {
-   // johannes   //printf("  LTF. Result[%d]:   %f\n",i,ahat(i));
-   // johannesfor ( auto& [name,V] : fit.Vsource )         printf("  myprintout  +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
-   // johannes}
 
    //fit.DoIterativeFitNewton(6,0.6,2,1);
    //fit.DoIterativeFitTaylor();
