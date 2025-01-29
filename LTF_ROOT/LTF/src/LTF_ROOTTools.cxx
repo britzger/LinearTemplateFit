@@ -278,8 +278,9 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    //TH1D* unc_summray = new TH1D("Uncertainty_summary","Uncertainty_summary",m_unc_summary.size(), 0, m_unc_summary.size());
 
    //std::map<std::string, std::double> m_unc_summary{};
-   std::array<string, 18> lepton_uncertainties = {"EG_RESOLUTION_ALL", 
-                                              "EG_SCALE_ALL",
+   //std::array<string, 18> lepton_uncertainties = {"EG_RESOLUTION_ALL", 
+   vector<string> lepton_uncertainties = {"EG_RESOLUTION_ALL",
+                                          "EG_SCALE_ALL",
                                               "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR", 
                                               "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
                                               "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR", 
@@ -297,31 +298,31 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
                                               "MUON_EFF_TrigStatUncertainty",
                                               "MUON_EFF_TrigSystUncertainty"};
    
-   TH1D* h_lepton_unc  = new TH1D("lepton_uncertainty","lepton_uncertainty",lepton_uncertainties.size()+1, 0, lepton_uncertainties.size()+1);
+   //TH1D* h_lepton_unc  = new TH1D("lepton_uncertainty","lepton_uncertainty",lepton_uncertainties.size()+1, 0, lepton_uncertainties.size()+1);
+   //
+   ////int ibin = 1;
+   //double lep_error = 0;
+   //for ( const string &source: lepton_uncertainties ) {
+   //   double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(0,0);
+   //   h_lepton_unc->Fill(source.c_str(), std::sqrt(error));
+   //   //h_lepton_unc->SetBinContent(ibin, std::sqrt(error));
+   //   //h_lepton_unc->GetXaxis()->SetBinLabel(ibin, source.c_str());
+   //   lep_error += error;
+   //   //ibin++;
+   //}
+   //h_lepton_unc->SetBinContent(h_lepton_unc->GetNbinsX(), std::sqrt(lep_error));
+   //h_lepton_unc->GetXaxis()->SetBinLabel(h_lepton_unc->GetNbinsX(), "Total unc.");
+   //h_lepton_unc->SetBarWidth(0.85);
+   //h_lepton_unc->GetYaxis()->SetLabelSize(0.03);
+   //h_lepton_unc->GetYaxis()->SetTitle("Uncertainty [GeV]");
+   //h_lepton_unc->GetXaxis()->SetLabelSize(0.02);
+   //h_lepton_unc->GetXaxis()->SetTickLength(0);
+   //h_lepton_unc->GetXaxis()->LabelsOption("<");
+   //h_lepton_unc->Draw("hbar");
+   //c1.Print(ps_name);
+   //c1.Clear();
 
-   //int ibin = 1;
-   double lep_error = 0;
-   for ( const string &source: lepton_uncertainties ) {
-      double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(0,0);
-      h_lepton_unc->Fill(source.c_str(), std::sqrt(error));
-      //h_lepton_unc->SetBinContent(ibin, std::sqrt(error));
-      //h_lepton_unc->GetXaxis()->SetBinLabel(ibin, source.c_str());
-      lep_error += error;
-      ibin++;
-   }
-   h_lepton_unc->SetBinContent(h_lepton_unc->GetNbinsX(), std::sqrt(lep_error));
-   h_lepton_unc->GetXaxis()->SetBinLabel(h_lepton_unc->GetNbinsX(), "Total unc.");
-   h_lepton_unc->SetBarWidth(0.85);
-   h_lepton_unc->GetYaxis()->SetLabelSize(0.03);
-   h_lepton_unc->GetYaxis()->SetTitle("Uncertainty [GeV]");
-   h_lepton_unc->GetXaxis()->SetLabelSize(0.02);
-   h_lepton_unc->GetXaxis()->SetTickLength(0);
-   h_lepton_unc->GetXaxis()->LabelsOption("<");
-   h_lepton_unc->Draw("hbar");
-   c1.Print(ps_name);
-   c1.Clear();
-
-   //double lep_error = makeErrorPlot(c1, ps_name, "Hist title", lepton_uncertainties); Johannes do this later
+   double lep_err = makeErrorPlot(c1, ps_name, "Hist title", fit, lepton_uncertainties);
 
 
    int nPar = fit.M.GetNcols()-1;
@@ -1154,3 +1155,28 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 }
 
 
+double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const string& title, const LTF::LiTeFit& fit, const vector<string> &uncertainties)
+{
+   TH1D* h  = new TH1D("title", "title",uncertainties.size()+1, 0, uncertainties.size()+1);
+   double sum_error = 0;
+   for ( const string &source: uncertainties ) {
+      double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(0,0);
+      h->Fill(source.c_str(), std::sqrt(error));
+      //h_lepton_unc->SetBinContent(ibin, std::sqrt(error));
+      //h_lepton_unc->GetXaxis()->SetBinLabel(ibin, source.c_str());
+      sum_error += error;
+   }
+   h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
+   h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
+   h->SetBarWidth(0.85);
+   h->GetYaxis()->SetLabelSize(0.03);
+   h->GetYaxis()->SetTitle("Uncertainty [GeV]");
+   h->GetXaxis()->SetLabelSize(0.02);
+   h->GetXaxis()->SetTickLength(0);
+   h->GetXaxis()->LabelsOption("<");
+   h->Draw("hbar");
+   c.Print(ps_name.c_str());
+   c.Clear();
+   
+   return std::sqrt(sum_error);
+}

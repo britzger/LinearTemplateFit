@@ -4,6 +4,7 @@
 #include <TH1D.h>
 #include <TGraphErrors.h>
 #include <TGraph2DErrors.h>
+#include <TCanvas.h>
 #include <set>
 
 using namespace std;
@@ -100,4 +101,7 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
                  const string& observablename = "Observable [unit]");
 
 
-}
+double makeErrorPlot(TCanvas&, const string&, const string&, const LTF::LiTeFit& fit, const vector<string>&);
+
+
+} //namespace
