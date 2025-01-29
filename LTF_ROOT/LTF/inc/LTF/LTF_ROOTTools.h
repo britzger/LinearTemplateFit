@@ -101,7 +101,7 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
                  const string& observablename = "Observable [unit]");
 
 
-double makeErrorPlot(TCanvas&, const string&, const string&, const LTF::LiTeFit& fit, const vector<string>&);
+double makeErrorPlot(TCanvas&, const string&, const char*, const LTF::LiTeFit& fit, const vector<string>&);
 
 
 } //namespace
