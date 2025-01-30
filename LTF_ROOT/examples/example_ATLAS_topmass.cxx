@@ -112,17 +112,16 @@ int example_ATLAS_topmass() {
       ltf.AddTemplateErrorSquared("statY", MM , hist->GetNbinsX(), hist->GetSumw2()->GetArray()+1, 0.); // set template error dY
       cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
    }
-   
    // --- initialize data
    ltf.SetData( data->GetNbinsX(), data->GetArray()+1);
-   cout<<"data:     "<<"\tnBins: "<<data->GetNbinsX()<<endl;
+   //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
+
+   
    // --- initialize data uncertainties
    data->Sumw2(); // only for now
-   //Johannes add safety
    TH1D* data_ref = TFile::Open(datauncfile)->Get<TH1D>(histnamedata);
    data_ref->Print("All");
-   //TFile *file = TFile::Open(datauncfile);
-
+   
    std::unique_ptr<TFile> file(TFile::Open(datauncfile));
 
    if (!file || file->IsOpen() == kFALSE) {
