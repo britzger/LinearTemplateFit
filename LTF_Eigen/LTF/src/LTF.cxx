@@ -559,17 +559,12 @@ void LTF::LiTeFit::PrintFull() const {
       for ( auto& [name,s] : DeltaSysA )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
    }
    Eigen::MatrixXd V = VFit();
-   //std::map<string, std::pair<double,double>> map_nuisance;
    if ( ahat.rows() > nPar ) {
       std::cout<<std::endl;
       std::cout<<"  Nuisance parameters       ";
       printf("          % 5.3f  +/-  %5.3f  (%s)\n",ahat(nPar),sqrt(V(nPar,nPar)),Sys[0].first.c_str() );
       for ( int i = nPar+1 ; i<int(ahat.rows()) ; i++ ) {
-
-         printf("                                      % 5.3f  +/-  %5.3f  (%s)\n",ahat(i),sqrt(V(i,i)),Sys[i-nPar].first.c_str() );
-         //std::map<string, std::pair<double,double>> map_nuisance;
-         //map_nuisance[Sys[i-nPar].first] = std::make_pair(ahat(i),sqrt(V(i,i)));
-         //cout<<" Cross check: "<<map_nuisance[Sys[i-nPar].first.c_str()].first<<" "<<map_nuisance[Sys[i-nPar].first.c_str()].second<<" map size "<<map_nuisance.size()<<endl;
+         printf("                                      % 5.3f  +/-  %5.3f  (%s)\n",100*ahat(i),sqrt(V(i,i)),Sys[i-nPar].first.c_str() );
       }
    }
    if ( ahat.rows() > 1 ) {
@@ -1458,7 +1453,16 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    this->a0_errorTmpl     = ahat_errorTmpl(0);
    this->a0_errorRespMat  = ahat_errorRespMat(0);
 
-   //Johannes add nuisance parameters here
+   //  ---------------------------------------------------------------- //
+   //  --- Nuisance parameter saved in a map
+   //  ---------------------------------------------------------------- //
+   Eigen::MatrixXd V = VFit();
+   if ( ahat.rows() > nPar ) {
+      map_nuisance[Sys[0].first] = std::make_pair(ahat(nPar),sqrt(V(nPar,nPar)));
+      for ( int i = nPar+1 ; i<int(ahat.rows()) ; i++ ) {
+         map_nuisance[Sys[i-nPar].first] = std::make_pair(ahat(i),sqrt(V(i,i)));
+      }
+   }
 
    //  ---------------------------------------------------------------- //
    // ---  chi^2
