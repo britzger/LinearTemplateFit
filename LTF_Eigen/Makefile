@@ -63,6 +63,7 @@ programs += $(EXAMPLE_DIR)/example1_LTF_gaus_NoROOT
 programs += $(EXAMPLE_DIR)/example2_LTF_gaus2D
 programs += $(EXAMPLE_DIR)/example2_LTF_gaus2D_NoROOT
 programs += $(EXAMPLE_DIR)/example3_LTF_gaus_sigma
+programs += $(EXAMPLE_DIR)/example_ATLAS_topmass
 bin: $(programs)
 
 $(programs): %: %.cxx

@@ -5,6 +5,7 @@
 #include <TGraphErrors.h>
 #include <TGraph2DErrors.h>
 #include <set>
+#include <TCanvas.h>
 
 using namespace std;
 
@@ -108,5 +109,7 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
                  const string& referencename = "Reference value (#alpha) [unit]",
                  const string& observablename = "Observable [unit]");
 
+static
+double makeErrorPlot(TCanvas&, const string&, const char*, const LTF::LiTeFit& fit, const vector<string>&);
 
 };

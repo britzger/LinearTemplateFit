@@ -265,7 +265,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    c1.Print("plots/LTF_plot.pdf");
 
    // ---------------------------------------------- //
-   // print relative size of all errors //Johannes
+   // print relative size of all errors
    // ---------------------------------------------- //
    {
       c1.Clear();
@@ -1251,7 +1251,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
    h->GetYaxis()->SetTitle("Uncertainty [GeV]");
    h->GetXaxis()->SetLabelSize(0.02);
    h->GetXaxis()->SetTickLength(0);
-   h->GetXaxis()->LabelsOption("<");
+   //h->GetXaxis()->LabelsOption("<");
    h->Draw("hbar");
 
    c.Print(ps_name.c_str());

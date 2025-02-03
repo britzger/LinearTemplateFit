@@ -102,20 +102,31 @@ int example_ATLAS_topmass() {
    // --- instantiate LTF object
    LTF ltf;
    ltf.SetGamma(vector<double>{1});
-   ltf.UseNuisanceParameters(false);
+   ltf.UseNuisanceParameters(true);
    ltf.UseLogNormalUncertainties(false);
 
    // --- initialize templates
+   int test_tmp = 1;
    for ( auto [MM,hist] : templates ) {
       ltf.AddTemplate(MM,  hist->GetNbinsX(),  hist->GetArray()+1 ); // set template
       hist->Sumw2();
       ltf.AddTemplateErrorSquared("statY", MM , hist->GetNbinsX(), hist->GetSumw2()->GetArray()+1, 0.); // set template error dY
       cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
+     
    }
-   // --- initialize data
-   ltf.SetData( data->GetNbinsX(), data->GetArray()+1);
-   //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
 
+   // In case you need to rebin by hand (e.g. to remove the last (overflow) bin
+   //double bin_edges[] = {0,   40,  80,  120, 160, 200, 280, 360, 480, 640, 960};
+   //TH1D* tmp_data = new TH1D("h1", "h1", 10, bin_edges);
+   //for ( int i = 1; i <= tmp_data->GetNbinsX(); i++ ) {
+   //   tmp_data->SetBinContent(i, data->GetBinContent(i));
+   //   tmp_data->SetBinError(i, std::sqrt(data->GetBinContent(i)));
+   //}
+
+   // --- initialize data
+   //for ( int i = 1; i <= data->GetNbinsX(); i++ ) data->SetBinError(i, std::sqrt(data->GetBinContent(i)));
+   ltf.SetData( data->GetNbinsX(), data->GetArray()+1);
+   ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
    
    // --- initialize data uncertainties
    data->Sumw2(); // only for now
@@ -161,7 +172,6 @@ int example_ATLAS_topmass() {
          }
       }
    }
-
    //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
 
    // for ( const auto& s : shiftsnuisance ) ltf.AddError("",N,s->GetArray()+1,1.);
@@ -171,6 +181,7 @@ int example_ATLAS_topmass() {
 
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
+
 
    //fit.DoIterativeFitNewton(6,0.6,2,1);
    //fit.DoIterativeFitTaylor();
