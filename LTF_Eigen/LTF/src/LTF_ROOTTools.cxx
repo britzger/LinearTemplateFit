@@ -260,36 +260,33 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    c1.Print("plots/LTF_plot.pdf");
 
 
-
-
-
-      // ---------------------------------------------- //
-      // print relative size of all errors
-      // ---------------------------------------------- //
-      {
-         c1.Clear();
-         c1.SetLogy(0);
-         c1.SetLeftMargin(0.2);
-
-         vector<string> lepton_uncertainties = {"EG_RESOLUTION_ALL",
-                                                "EG_SCALE_ALL",
-                                                "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR",
-                                                "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
-                                                "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR",
-                                                "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR",
-                                                "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR",
-                                                "MUON_SAGITTA_DATASTAT",
-                                                "MUON_SAGITTA_RESBIAS",
-                                                "MUON_EFF_BADMUON_SYS",
-                                                "MUON_EFF_ISO_STAT",
-                                                "MUON_EFF_ISO_SYS",
-                                                "MUON_EFF_RECO_STAT",
-                                                "MUON_EFF_RECO_SYS",
-                                                "MUON_EFF_TTVA_STAT",
-                                                "MUON_EFF_TTVA_SYS",
-                                                "MUON_EFF_TrigStatUncertainty",
-                                                "MUON_EFF_TrigSystUncertainty"};
-
+   // ---------------------------------------------- //
+   // print relative size of all errors
+   // ---------------------------------------------- //
+   {
+      c1.Clear();
+      c1.SetLogy(0);
+      c1.SetLeftMargin(0.2);
+      
+      vector<string> lepton_uncertainties = {"EG_RESOLUTION_ALL",
+                                             "EG_SCALE_ALL",
+                                             "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR",
+                                             "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
+                                             "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR",
+                                             "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR",
+                                             "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR",
+                                             "MUON_SAGITTA_DATASTAT",
+                                             "MUON_SAGITTA_RESBIAS",
+                                             "MUON_EFF_BADMUON_SYS",
+                                             "MUON_EFF_ISO_STAT",
+                                             "MUON_EFF_ISO_SYS",
+                                             "MUON_EFF_RECO_STAT",
+                                             "MUON_EFF_RECO_SYS",
+                                             "MUON_EFF_TTVA_STAT",
+                                             "MUON_EFF_TTVA_SYS",
+                                             "MUON_EFF_TrigStatUncertainty",
+                                             "MUON_EFF_TrigSystUncertainty"};
+      
       vector<string> jes_uncertainties = {"JET_EffectiveNP_Detector1",
                                           "JET_EffectiveNP_Detector2",
                                           "JET_EffectiveNP_Mixed1",
@@ -423,12 +420,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       c1.Print(ps_name);
       c1.Clear();
    }
-
-
-
-
-
-
 
    // ---------------------------------------------- //
    // print linear-functions in every bin
@@ -1238,56 +1229,102 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 
 double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties)
 {
-
-   int nPar = 1; //M.cols()-1;
-   double sum_error = 0; // this needs to be avector in the case of more than 1 parameter
-   for ( int i = 0 ; i<nPar ; i++ ) {
-      c.Divide(2,1);
-      c.cd(1);
-      TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
-      
-      for ( const string &source: uncertainties ) {
-         cout<<"(0,0) element "<<fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(0,0)<<" source "<<source<<endl;
-
-         double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i);
-         h->Fill(source.c_str(), std::sqrt(std::abs(error)));
-         sum_error += error;
-      }
-      
-      h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
-      h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
-      h->SetBarWidth(0.85);
-      h->GetYaxis()->SetLabelSize(0.03);
-      h->GetYaxis()->SetTitle("Uncertainty [GeV]");
-      h->GetXaxis()->SetLabelSize(0.02);
-      h->GetXaxis()->SetTickLength(0);
-      h->Draw("hbar");
-
-      //if ( fit.map_nuisance.size() > 90 ) {
-         c.cd(2)->SetLeftMargin(0.15);
-         cout<<"Johannes Nuisance parameter"<<endl;
-         for ( auto [name, para] : fit.map_nuisance ) {
-            cout<<name<<": "<<para.first<<" "<<para.second<<endl;
+   bool useNuisanceParameter = false;
+   int nPar = 1; //M.cols()-1; 
+   double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
+   if ( useNuisanceParameter ) {
+      for ( int i = 0 ; i<nPar ; i++ ) {
+         TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
+         
+         for ( const string &source: uncertainties ) {
+            double error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i)));
+            h->Fill(source.c_str(), error);
+            sum_error += pow(error,2);
          }
-         TGraphErrors* g = new TGraphErrors(uncertainties.size()+1);
-         //for ( const string &source: uncertainties ) {
+         h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
+         h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
+         h->SetBarWidth(0.85);
+         h->GetYaxis()->SetLabelSize(0.03);
+         h->GetYaxis()->SetTitle("Uncertainty [GeV]");
+         h->GetXaxis()->SetLabelSize(0.02);
+         h->GetXaxis()->SetTickLength(0);
+         h->Draw("hbar");
+      }
+   }
+   else {
+      for ( int i = 0 ; i<nPar ; i++ ) {
+         c.Divide(2,1);
+         c.cd(1);
+         TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
+         
+         for ( const string &source: uncertainties ) {
+            double error = 0;
+            if ( source.find("_STAT_DATA")!= std::string::npos || source.find("_STAT_MC")!= std::string::npos)
+               error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i)));
+            else
+               error = fabs(fit.DeltaSys.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i));
+            h->Fill(source.c_str(), error);
+            sum_error += pow(error,2);
+         }
+         
+         h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
+         h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
+         h->SetBarOffset(0.1);
+         h->SetBarWidth(0.8);
+         h->GetYaxis()->SetLabelSize(0.03);
+         h->GetYaxis()->SetTitle("Uncertainty [GeV]");
+         h->GetXaxis()->SetLabelSize(0.02);
+         h->GetXaxis()->SetTickLength(0);
+         h->Draw("hbar");
+         
+         c.cd(2)->SetLeftMargin(0.15);
+         TH1D* h1  = new TH1D("NP", "NP", uncertainties.size()+1, 0, uncertainties.size()+1);
+         TGraphErrors* g = new TGraphErrors(uncertainties.size());
          for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
+            h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first);
+            h1->SetBinError(j,fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second);
             g->SetPoint(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
             g->SetPointError(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
-            //g->GetYaxis()->SetBinLabel(j, uncertainties[j].c_str());
+            //set errors;
          }
+         h1->SetBinContent(h->GetNbinsX(), 0.);
+         h1->GetXaxis()->SetBinLabel(h->GetNbinsX(), "");
+         gStyle->SetHistMinimumZero();
+         h1->SetBarOffset(0.1);
+         h1->SetBarWidth(0);
+         h1->SetLineColor(10);
+         //h1->SetFillColor(10);
+         h1->SetLineColorAlpha(10,0);
+
+         h1->GetYaxis()->SetLabelSize(0.03);
+         h1->GetYaxis()->SetTitle("Nuisance parameter");
+         h1->GetXaxis()->SetLabelSize(0.02);
+         h1->GetXaxis()->SetTickLength(0);
          g->SetMarkerSize(1);
          g->SetMarkerStyle(20);
          g->SetMarkerColor(kBlue);
-         g->GetXaxis()->SetTitle("Nuisance parameter");
-         g->GetYaxis()->SetTitle("Uncertainty");
-         g->Draw("AP");
-         //}
-  
+         h1->Draw("hbar e");
+         g->Draw("same PE");
+         
+         //TLine
 
-      c.Print(ps_name.c_str());
-      c.Clear();
-}
+         //TGraphErrors* g = new TGraphErrors(uncertainties.size()+1);
+         //for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
+         //   g->SetPoint(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
+         //   g->SetPointError(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
+         //   g->GetYaxis()->SetBinLabel(j, uncertainties[j].c_str());
+         //}
+         //g->SetMarkerSize(1);
+         //g->SetMarkerStyle(20);
+         //g->SetMarkerColor(kBlue);
+         //g->GetXaxis()->SetTitle("Nuisance parameter");
+         //g->GetYaxis()->SetTitle("Uncertainty");
+         //g->Draw("AP");
+         
+         c.Print(ps_name.c_str());
+         c.Clear();
+      }
+   }
    return std::sqrt(sum_error);
 }
 

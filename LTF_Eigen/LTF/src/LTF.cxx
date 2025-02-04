@@ -551,13 +551,23 @@ void LTF::LiTeFit::PrintFull() const {
    for ( int i = 0 ; i<nPar ; i++ ) {
       printf("  LTF. Result[%d]:   %f\n",i,ahat(i));
       for ( auto& [name,V] : Vsource )         printf("                             +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
+      for ( auto& [name,V] : Vsource )         printf(" 0                            +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
+
       for ( auto& [name,v] : DeltaSys )        printf("                             +/- % 8.6f (%s)\n", v(i), name.c_str());
+      
       std::cout<<std::endl; 
       for ( auto& [name,V] : VsourceExt )      printf("                             +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
       for ( auto& [name,v] : DeltaSysExt )     printf("                             +/- % 8.6f (%s)\n", v(i), name.c_str());
       for ( auto& [name,s] : DeltaSysY )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
       for ( auto& [name,s] : DeltaSysA )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
+      for ( auto& [name,V] : Vsource )         printf(" 0.1                            +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
+
    }
+   for ( int i = 0 ; i<nPar ; i++ ) {
+      printf("1  LTF. Result[%d]:   %f\n",i,ahat(i));
+      for ( auto& [name,V] : Vsource )         printf("                             +/- % 8.6f (%s)\n", std::sqrt(V(i,i)), name.c_str());
+   } //johannes
+
    Eigen::MatrixXd V = VFit();
    if ( ahat.rows() > nPar ) {
       std::cout<<std::endl;
@@ -567,6 +577,12 @@ void LTF::LiTeFit::PrintFull() const {
          printf("                                      % 5.3f  +/-  %5.3f  (%s)\n",ahat(i),sqrt(V(i,i)),Sys[i-nPar].first.c_str() );
       }
    }
+
+   for ( int i = 0 ; i<nPar ; i++ ) {
+      printf("2  LTF. Result[%d]:   %f\n",i,ahat(i));
+      for ( auto& [name,V1] : Vsource )         printf("                             +/- % 8.6f (%s)\n", std::sqrt(V1(i,i)), name.c_str());
+   } //johannes
+
    if ( ahat.rows() > 1 ) {
       std::cout<<std::endl;
       streamsize tmpprec = std::cout.precision();
@@ -1458,9 +1474,9 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    //  ---------------------------------------------------------------- //
    Eigen::MatrixXd V = VFit();
    if ( ahat.rows() > nPar ) {
-      map_nuisance[Sys[0].first] = std::make_pair(ahat(nPar),sqrt(V(nPar,nPar)));
+      map_nuisance[Sys[0].first] = std::make_pair(ahat(nPar),sqrt(fabs(V(nPar,nPar))));
       for ( int i = nPar+1 ; i<int(ahat.rows()) ; i++ ) {
-         map_nuisance[Sys[i-nPar].first] = std::make_pair(ahat(i),sqrt(V(i,i)));
+         map_nuisance[Sys[i-nPar].first] = std::make_pair(ahat(i),sqrt(fabs(V(i,i))));
       }
    }
    

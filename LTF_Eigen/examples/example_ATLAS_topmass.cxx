@@ -117,7 +117,7 @@ int example_ATLAS_topmass() {
    LTF ltf;
    ltf.SetGamma(vector<double>{1});
    ltf.UseNuisanceParameters(true);
-   ltf.UseLogNormalUncertainties(false);
+   ltf.UseLogNormalUncertainties(true);
 
    // --- initialize templates
    int test_tmp = 1;
@@ -194,8 +194,10 @@ int example_ATLAS_topmass() {
                   tmp.push_back(hist->GetBinContent(i));
                }
                double corr = 1;
-               if ( title.find("_STAT_")!= std::string::npos) corr = 0;
-               if ( title.find("_TOTAL_")!= std::string::npos) ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+               if ( title.find("_STAT_DATA")!= std::string::npos || title.find("_STAT_MC")!= std::string::npos) corr = 0;
+               if ( title.find("_FULL_SYS_SUM_")!= std::string::npos) ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+               else if ( title.find("_TOTAL_SYSONLY__1up")!= std::string::npos) ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+               else if ( title.find("_TOTAL__1up")!= std::string::npos) ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
                else  ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::Constrained);
                //ltf.AddCorrelatedError(title, tmp);
             }
@@ -215,6 +217,9 @@ int example_ATLAS_topmass() {
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
 
+   //johannes
+   cout<<"Printout Johannes"<<endl;
+   for ( auto& [name,V] : fit.Vsource )         printf(" +/- % 8.6f (%s)\n", std::sqrt(V(0,0)), name.c_str());
 
    //fit.DoIterativeFitNewton(6,0.6,2,1);
    //fit.DoIterativeFitTaylor();
@@ -223,13 +228,13 @@ int example_ATLAS_topmass() {
    vector<double> bins{};
    for(int i = 1; i <= data->GetNbinsX(); i++) {
       bins.push_back(data->GetBinLowEdge(i));
-      cout<<"Bin "<<i<<" "<<data->GetBinLowEdge(i)<<endl;
+      //cout<<"Bin "<<i<<" "<<data->GetBinLowEdge(i)<<endl;
    }
    bins.push_back(data->GetXaxis()->GetBinUpEdge(data->GetNbinsX()));
 
    double* bins1 = data->GetArray()+1;
-   cout<<bins1[0]<<" "<<bins1[-1]<<endl;
-//for ( auto number : bins1 ) std::cout<<number<<std::endl;
+   //cout<<bins1[0]<<" "<<bins1[-1]<<endl;
+   //for ( auto number : bins1 ) std::cout<<number<<std::endl;
    LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx","","m_{bl}");
    
    return 0;
