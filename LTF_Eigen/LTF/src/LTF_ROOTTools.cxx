@@ -1287,13 +1287,13 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
             g->SetPointError(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
             //set errors;
          }
-         h1->SetBinContent(h->GetNbinsX(), 0.);
-         h1->GetXaxis()->SetBinLabel(h->GetNbinsX(), "");
+         h1->SetBinContent(h1->GetNbinsX(), 0.);
+         h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
          gStyle->SetHistMinimumZero();
-         h1->SetBarOffset(0.1);
+         h1->SetBarOffset(0.95);
          h1->SetBarWidth(0);
          h1->SetLineColor(10);
-         //h1->SetFillColor(10);
+         h1->SetFillColor(10);
          h1->SetLineColorAlpha(10,0);
 
          h1->GetYaxis()->SetLabelSize(0.03);
@@ -1306,8 +1306,9 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          h1->Draw("hbar e");
          g->Draw("same PE");
          
-         //TLine
-
+         TLine* l = new TLine(0, 0, 0, h1->GetNbinsX());
+         l->SetLineStyle(3);
+         l->Draw("same");
          //TGraphErrors* g = new TGraphErrors(uncertainties.size()+1);
          //for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
          //   g->SetPoint(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
