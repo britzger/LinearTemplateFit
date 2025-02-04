@@ -564,7 +564,7 @@ void LTF::LiTeFit::PrintFull() const {
       std::cout<<"  Nuisance parameters       ";
       printf("          % 5.3f  +/-  %5.3f  (%s)\n",ahat(nPar),sqrt(V(nPar,nPar)),Sys[0].first.c_str() );
       for ( int i = nPar+1 ; i<int(ahat.rows()) ; i++ ) {
-         printf("                                      % 5.3f  +/-  %5.3f  (%s)\n",100*ahat(i),sqrt(V(i,i)),Sys[i-nPar].first.c_str() );
+         printf("                                      % 5.3f  +/-  %5.3f  (%s)\n",ahat(i),sqrt(V(i,i)),Sys[i-nPar].first.c_str() );
       }
    }
    if ( ahat.rows() > 1 ) {
@@ -1463,7 +1463,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
          map_nuisance[Sys[i-nPar].first] = std::make_pair(ahat(i),sqrt(V(i,i)));
       }
    }
-
+   
    //  ---------------------------------------------------------------- //
    // ---  chi^2
    //  ---------------------------------------------------------------- //

@@ -1240,18 +1240,17 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
 {
 
    int nPar = 1; //M.cols()-1;
-   std::cout<<std::endl;
    double sum_error = 0; // this needs to be avector in the case of more than 1 parameter
-
    for ( int i = 0 ; i<nPar ; i++ ) {
-
       c.Divide(2,1);
       c.cd(1);
       TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
       
       for ( const string &source: uncertainties ) {
+         cout<<"(0,0) element "<<fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(0,0)<<" source "<<source<<endl;
+
          double error = fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i);
-         h->Fill(source.c_str(), std::sqrt(error));
+         h->Fill(source.c_str(), std::sqrt(std::abs(error)));
          sum_error += error;
       }
       
@@ -1264,26 +1263,31 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
       h->GetXaxis()->SetTickLength(0);
       h->Draw("hbar");
 
-
-      // The nuisance parameters are not sorted!
-      // Create a map<string, double, double> with uncertainty name, nuisance parameter and error on NP
-      //Eigen::MatrixXd V = fit.VFit();
-      //cout<<"Johannes Nuisance parameter"<<endl;
-      //if ( fit.ahat.rows() > nPar ) {
-      //   for ( int i = nPar+1 ; i<int(fit.ahat.rows()) ; i++ )
-      //      printf("                                      % 5.3f  +/-  %5.3f  (%s)\n",fit.ahat(i),sqrt(V(i,i)),uncertainties[i-1].c_str() );
-      //}
-
-      //std::cout<<std::endl;
-      //   std::cout<<"  Nuisance parameters       ";
-      //   printf("          % 5.3f  +/-  %5.3f  (%s)\n",ahat(nPar),sqrt(V(nPar,nPar)),Sys[0].first.c_str() );
-
-
-   
+      //if ( fit.map_nuisance.size() > 90 ) {
+         c.cd(2)->SetLeftMargin(0.15);
+         cout<<"Johannes Nuisance parameter"<<endl;
+         for ( auto [name, para] : fit.map_nuisance ) {
+            cout<<name<<": "<<para.first<<" "<<para.second<<endl;
+         }
+         TGraphErrors* g = new TGraphErrors(uncertainties.size()+1);
+         //for ( const string &source: uncertainties ) {
+         for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
+            g->SetPoint(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
+            g->SetPointError(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
+            //g->GetYaxis()->SetBinLabel(j, uncertainties[j].c_str());
+         }
+         g->SetMarkerSize(1);
+         g->SetMarkerStyle(20);
+         g->SetMarkerColor(kBlue);
+         g->GetXaxis()->SetTitle("Nuisance parameter");
+         g->GetYaxis()->SetTitle("Uncertainty");
+         g->Draw("AP");
+         //}
+  
 
       c.Print(ps_name.c_str());
       c.Clear();
-   }
+}
    return std::sqrt(sum_error);
 }
 
