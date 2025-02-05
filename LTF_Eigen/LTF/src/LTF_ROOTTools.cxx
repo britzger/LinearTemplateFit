@@ -1229,10 +1229,10 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 
 double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties)
 {
-   bool useNuisanceParameter = false;
+   bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1; 
    double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
-   if ( useNuisanceParameter ) {
+   if ( !useNuisanceParameter ) {
       for ( int i = 0 ; i<nPar ; i++ ) {
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
          
@@ -1259,7 +1259,10 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          
          for ( const string &source: uncertainties ) {
             double error = 0;
-            if ( source.find("_STAT_DATA")!= std::string::npos || source.find("_STAT_MC")!= std::string::npos)
+            if ( source.find("STAT_DATA") != std::string::npos ) {
+               error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i)));
+            }
+            else if ( source.find("STAT_MC") != std::string::npos)
                error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i)));
             else
                error = fabs(fit.DeltaSys.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i));
@@ -1309,21 +1312,13 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          TLine* l = new TLine(0, 0, 0, h1->GetNbinsX());
          l->SetLineStyle(3);
          l->Draw("same");
-         //TGraphErrors* g = new TGraphErrors(uncertainties.size()+1);
-         //for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
-         //   g->SetPoint(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
-         //   g->SetPointError(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
-         //   g->GetYaxis()->SetBinLabel(j, uncertainties[j].c_str());
-         //}
-         //g->SetMarkerSize(1);
-         //g->SetMarkerStyle(20);
-         //g->SetMarkerColor(kBlue);
-         //g->GetXaxis()->SetTitle("Nuisance parameter");
-         //g->GetYaxis()->SetTitle("Uncertainty");
-         //g->Draw("AP");
-         
+
          c.Print(ps_name.c_str());
          c.Clear();
+         h->Delete();
+         h1->Delete();
+         g->Delete();
+         l->Delete();
       }
    }
    return std::sqrt(sum_error);
