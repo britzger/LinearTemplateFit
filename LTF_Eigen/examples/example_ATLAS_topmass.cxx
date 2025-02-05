@@ -84,7 +84,7 @@ int example_ATLAS_topmass() {
    const int     iRebinData   = 1;
    const TString pseudodatafile     = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
    const TString datafile = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
-   const TString datauncfile  = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
+   //const TString datauncfile  = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
    const TString migmaname    = "h2_mupt2_4p";
    
    double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
@@ -144,33 +144,41 @@ int example_ATLAS_topmass() {
    
    // --- initialize data uncertainties
    data->Sumw2(); // only for now
-   TH1D* data_ref = TFile::Open(datauncfile)->Get<TH1D>(histnamedata);
-   data_ref->Print("All");
+   //TH1D* data_ref = TFile::Open(datauncfile)->Get<TH1D>(histnamedata);
+   //data_ref->Print("All");
 
   
-   std::unique_ptr<TFile> file(TFile::Open(datauncfile));
+   std::unique_ptr<TFile> file(TFile::Open(datafile));
 
    if (!file || file->IsOpen() == kFALSE) {
       std::cerr << "Error: Couldn't open the file!" << std::endl;
       return 1;
    }
-   
-   TString histnameCovStat(histnamedata); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA                                                                      
-   histnameCovStat.ReplaceAll("unfolding_","unfolding_covariance_matrix_");
-   histnameCovStat.ReplaceAll("_NOSYS","_covariance_STAT_DATA");
-   TH2D* cov_stat_dat = TFile::Open(datauncfile)->Get<TH2D>(histnameCovStat);
-   if ( !cov_stat_dat ) { cerr<<"Could not find covariance matrix " << histnameCovStat <<endl; exit(1);}
-   //vector<vector<double > > vecCov2 = TH2D_to_vecvec(cov_stat_dat);
-   //ltf.AddError("stat.", vecCov2); //Johannes this is where the covariance matrix was passed
 
-   // cov_stat_dat->Print("all");                                                                                                                                                                           
-   // cout<<"data_ref"<<endl;                                                                                                                                                                               
-   // data_ref->Print("all");                                                                                                                                                                               
-   // cout<<"data"<<endl;                                                                                                                                                                                   
-   // data->Print("all");                                                                                                                                                                                   
-   // cout<<"Ndata points in templates: "<<templates[170]->GetNbinsX()<<endl;                                                                                                                               
-   // cout<<"Template: " <<endl;                                                                                                                                                                            
-   // templates[170]->Print("all");         
+   bool passCovMatrix = false;
+   if ( passCovMatrix ) {
+      TString histnameCovStat(histnamedata); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
+      histnameCovStat.ReplaceAll("unfolding_","unfolding_covariance_matrix_");
+      histnameCovStat.ReplaceAll("_NOSYS","_covariance_STAT_DATA");
+      TH2D* cov_stat_dat = TFile::Open(datafile)->Get<TH2D>(histnameCovStat);
+      if ( !cov_stat_dat ) { cerr<<"Could not find covariance matrix " << histnameCovStat <<endl; exit(1);}
+      else cout<<"Found covarinace matrix "<<histnameCovStat<<endl;
+   
+      vector<vector<double > > vecCov2 = TH2D_to_vecvec(cov_stat_dat);
+      for ( auto& tmp_vec: vecCov2 ){
+         for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
+         cout<<endl;
+      }
+      ltf.AddErrorRelative("stat.", vecCov2);
+      //cov_stat_dat->Print("all");
+      //cout<<"data"<<endl;
+      //data->Print("all");
+      //cout<<"data"<<endl;
+      //data->Print("all");
+      //cout<<"Ndata points in templates: "<<templates[170]->GetNbinsX()<<endl;
+      //cout<<"Template: " <<endl;
+      //templates[170]->Print("all");
+   }
 
    // Get the list of keys in the file (this represents all objects)
    TIter next(file->GetListOfKeys());
@@ -194,12 +202,14 @@ int example_ATLAS_topmass() {
                   tmp.push_back(hist->GetBinContent(i));
                }
                double corr = 1;
-               if ( title.find("_STAT_DATA")!= std::string::npos || title.find("_STAT_MC")!= std::string::npos) corr = 0;
-               if ( title.find("_FULL_SYS_SUM_")!= std::string::npos) ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-               else if ( title.find("_TOTAL_SYSONLY__1up")!= std::string::npos) ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-               else if ( title.find("_TOTAL__1up")!= std::string::npos) ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+               if ( title.find("_STAT_DATA")!= std::string::npos ) {
+                  if ( !passCovMatrix ) ltf.AddErrorRelative(title, tmp, 0.0, LTF::Uncertainty::Constrained);
+               }
+               else if ( title.find("_STAT_MC")!= std::string::npos )                ltf.AddErrorRelative(title, tmp, 0.0, LTF::Uncertainty::Constrained);
+               else if ( title.find("_FULL_SYS_SUM_")!= std::string::npos)           ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+               else if ( title.find("_TOTAL_SYSONLY__1up")!= std::string::npos)      ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+               else if ( title.find("_TOTAL__1up")!= std::string::npos)              ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
                else  ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::Constrained);
-               //ltf.AddCorrelatedError(title, tmp);
             }
             else {
                continue;
@@ -207,7 +217,7 @@ int example_ATLAS_topmass() {
          }
       }
    }
-   ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
+   //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
 
    // for ( const auto& s : shiftsnuisance ) ltf.AddError("",N,s->GetArray()+1,1.);
    // for ( const auto& s : shifts ) ltf.AddError("",N,s->GetArray()+1,1.);
