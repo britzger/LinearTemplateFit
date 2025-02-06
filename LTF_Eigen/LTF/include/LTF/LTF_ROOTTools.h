@@ -80,7 +80,8 @@ static
 void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
                  const string& yaxistitle    = "value [unit]",
                  const string& referencename = "Reference value (#alpha) [unit]",
-                 const string& observablename = "Observable [unit]");
+                 const int& var_index = 0);
+//const string& observablename = "Observable [unit]");
 
 
 // __________________________________________________________________________________ //
@@ -110,6 +111,6 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
                  const string& observablename = "Observable [unit]");
 
 static
-double makeErrorPlot(TCanvas&, const string&, const char*, const LTF::LiTeFit& fit, const vector<string>&);
+   double makeErrorPlot(TCanvas&, const string&, const char*, const LTF::LiTeFit& fit, const vector<string>&, const int&);
 
 };

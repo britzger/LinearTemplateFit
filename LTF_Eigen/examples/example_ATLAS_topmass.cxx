@@ -71,15 +71,20 @@ int example_ATLAS_topmass() {
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
+   const int var_name_index = 0;
+   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl"};
+   const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax"};
 
-   //const TString histname     = "m_bl";
-   //const TString histnamedata = "unfolding_mbl_selected_NOSYS";
+   if ( !(var_name_index<var_name.size())  ) { cerr<<"Make sure to set var_name_index to a correct value!"<<endl; exit(1);}
+
+   const TString histname     = var_name_short[var_name_index];
+   const TString histnamedata = "unfolding_"+var_name[var_name_index]+"_NOSYS";
    //const TString histname     = "m_bw";
    //const TString histnamedata = "unfolding_mbwhad_selected_NOSYS";
    //const TString histname     = "m_wbbl";
    //const TString histnamedata = "unfolding_mwhadbbl_NOSYS";
-   const TString histname     = "m_minimax";
-   const TString histnamedata = "unfolding_minimax_whadbbl_NOSYS";
+   //const TString histname     = "m_minimax";
+   //const TString histnamedata = "unfolding_minimax_whadbbl_NOSYS";
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
    const TString pseudodatafile     = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
@@ -184,16 +189,17 @@ int example_ATLAS_topmass() {
    TObject *obj;
    TKey* key;
    // Loop over all keys (objects) in the file
+   
    while ((key = (TKey*) next())) {
       obj = file->Get<TObject>(key->GetName());
       if (obj->InheritsFrom("TH1D")) {
          std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
          if (hist) {
             string title = hist->GetTitle();
-            //if ((title.find("unfolding_error_mbl_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
+            if ((title.find("unfolding_error_"+var_name[var_name_index]+"_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
             //if ((title.find("unfolding_error_mbwhad_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
             //if ((title.find("unfolding_error_mwhadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-            if ((title.find("unfolding_error_minimax_whadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
+            //if ((title.find("unfolding_error_minimax_whadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
                cout<<title<<endl;
                vector<double> tmp;
                double* entries = hist->GetArray();
@@ -236,7 +242,7 @@ int example_ATLAS_topmass() {
    bins.push_back(data->GetXaxis()->GetBinUpEdge(data->GetNbinsX()));
 
    double* bins1 = data->GetArray()+1;
-   LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx","","m_{Wb,bl}^{minimax}");
+   LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx","",var_name_index);
    
    return 0;
 
