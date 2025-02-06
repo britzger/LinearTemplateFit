@@ -184,7 +184,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    Eigen::VectorXd reference_values = M.col(1);
    //TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
    
-   const vector<string> var_name_latex = {"m_{bl}", "m_{bW}", "m_{Wbbl}", "m_{Wb,bl}^{minimax}"};
+   const vector<string> var_name_latex = {"m_{bl}", "m_{bW}", "m_{Wbbl}", "m_{Wb,bl}^{minimax}", "#Delta R(b,l)", "#Delta R(b,W)"};
 
    map<double,TH1D*> templates;
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
@@ -1240,7 +1240,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
    bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1; 
    double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
-   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl"};
+   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected"};
    const string variable = var_name[var_index];
    //const string variable = "mbl_selected";
    //const string variable = "mbwhad_selected";
