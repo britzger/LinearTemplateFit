@@ -72,14 +72,14 @@ int example_ATLAS_topmass() {
 
    map<double,TH1D*> templates;
 
-   const TString histname     = "m_bl";
-   const TString histnamedata = "unfolding_mbl_selected_NOSYS";
+   //const TString histname     = "m_bl";
+   //const TString histnamedata = "unfolding_mbl_selected_NOSYS";
    //const TString histname     = "m_bw";
    //const TString histnamedata = "unfolding_mbwhad_selected_NOSYS";
    //const TString histname     = "m_wbbl";
    //const TString histnamedata = "unfolding_mwhadbbl_NOSYS";
-   //const TString histname     = "m_minimax";
-   //const TString histnamedata = "unfolding_minimax_whadbbl_NOSYS";
+   const TString histname     = "m_minimax";
+   const TString histnamedata = "unfolding_minimax_whadbbl_NOSYS";
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
    const TString pseudodatafile     = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
@@ -87,8 +87,8 @@ int example_ATLAS_topmass() {
    //const TString datauncfile  = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
    const TString migmaname    = "h2_mupt2_4p";
    
-   double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
-   cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
+   //double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
+   //cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
    templates[155] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
    templates[160] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
    templates[165] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
@@ -138,12 +138,11 @@ int example_ATLAS_topmass() {
    //}
 
    // --- initialize data
-   //for ( int i = 1; i <= data->GetNbinsX(); i++ ) data->SetBinError(i, std::sqrt(data->GetBinContent(i)));
    ltf.SetData( data->GetNbinsX(), data->GetArray()+1);
-   ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
+   //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
    
    // --- initialize data uncertainties
-   data->Sumw2(); // only for now
+   //data->Sumw2(); // only for now
    //TH1D* data_ref = TFile::Open(datauncfile)->Get<TH1D>(histnamedata);
    //data_ref->Print("All");
 
@@ -155,8 +154,8 @@ int example_ATLAS_topmass() {
       return 1;
    }
 
-   bool passCovMatrix = false;
-   if ( passCovMatrix ) {
+   bool passDataCovMatrix = true;
+   if ( passDataCovMatrix ) {
       TString histnameCovStat(histnamedata); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
       histnameCovStat.ReplaceAll("unfolding_","unfolding_covariance_matrix_");
       histnameCovStat.ReplaceAll("_NOSYS","_covariance_STAT_DATA");
@@ -191,10 +190,10 @@ int example_ATLAS_topmass() {
          std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
          if (hist) {
             string title = hist->GetTitle();
-            if ((title.find("unfolding_error_mbl_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
+            //if ((title.find("unfolding_error_mbl_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
             //if ((title.find("unfolding_error_mbwhad_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
             //if ((title.find("unfolding_error_mwhadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-            //if ((title.find("unfolding_error_minimax_whadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
+            if ((title.find("unfolding_error_minimax_whadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
                cout<<title<<endl;
                vector<double> tmp;
                double* entries = hist->GetArray();
@@ -203,7 +202,7 @@ int example_ATLAS_topmass() {
                }
                double corr = 1;
                if ( title.find("_STAT_DATA")!= std::string::npos ) {
-                  if ( !passCovMatrix ) ltf.AddErrorRelative(title, tmp, 0.0, LTF::Uncertainty::Constrained);
+                  if ( !passDataCovMatrix ) ltf.AddErrorRelative("stat.", tmp, 0.0, LTF::Uncertainty::Constrained);
                }
                else if ( title.find("_STAT_MC")!= std::string::npos )                ltf.AddErrorRelative(title, tmp, 0.0, LTF::Uncertainty::Constrained);
                else if ( title.find("_FULL_SYS_SUM_")!= std::string::npos)           ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
@@ -227,25 +226,17 @@ int example_ATLAS_topmass() {
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
 
-   //johannes
-   cout<<"Printout Johannes"<<endl;
-   for ( auto& [name,V] : fit.Vsource )         printf(" +/- % 8.6f (%s)\n", std::sqrt(V(0,0)), name.c_str());
-
    //fit.DoIterativeFitNewton(6,0.6,2,1);
    //fit.DoIterativeFitTaylor();
    //fit.PrintFull();
-   //const vector<double> bins{0, 40.0,  60.0,  80.0,  100.0, 120.0, 140.0, 160.0, 180.0, 200.0, 220.0 };
    vector<double> bins{};
    for(int i = 1; i <= data->GetNbinsX(); i++) {
       bins.push_back(data->GetBinLowEdge(i));
-      //cout<<"Bin "<<i<<" "<<data->GetBinLowEdge(i)<<endl;
    }
    bins.push_back(data->GetXaxis()->GetBinUpEdge(data->GetNbinsX()));
 
    double* bins1 = data->GetArray()+1;
-   //cout<<bins1[0]<<" "<<bins1[-1]<<endl;
-   //for ( auto number : bins1 ) std::cout<<number<<std::endl;
-   LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx","","m_{bl}");
+   LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx","","m_{Wb,bl}^{minimax}");
    
    return 0;
 

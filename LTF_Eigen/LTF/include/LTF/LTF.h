@@ -472,7 +472,15 @@ public:
    void UseNuisanceParameters(bool UseNuisance=true) {
       fUseNuisance = UseNuisance;
    }
-
+   
+   // ------------------------------------------- //
+   // --- Pass covairance matrix as stat. uncertainties
+   // ------------------------------------------- //
+   //!   \brief Pass the covariance matrix of the data to the fit
+   //!   default: true
+   void PassCovarianceMatrix(bool PassCovariance=true) {
+      fPassCovariance = PassCovariance;
+   }
 
    // ------------------------------------------- //
    // --- rescale (absolute) uncertainties
@@ -519,6 +527,7 @@ protected:
    std::vector<double> fGamma;                                                //!< exponential parameter (a+b*x^\gamma)
    bool   fUseLog = false;                                                    //!< Use relative uncertainties
    bool fUseNuisance = true;                                                  //!< Nuisance parameter or a covariance matrices
+   bool fPassCovariance = true;                                               //!< Pass covariance matrix of the data to the fit
    LiTeFit fLTF;                                                              //!< result
                                                                               
    int fBinMin = 0;                                                           //!< Fit range

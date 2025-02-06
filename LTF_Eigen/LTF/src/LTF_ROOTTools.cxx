@@ -385,7 +385,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
                                            "FAKES_Electron",
                                            "FAKES_Muon"};
 
-      vector<string> other_uncertainties = {"STAT_DATA",
+      vector<string> other_uncertainties = {"stat.", //"STAT_DATA",
                                             "STAT_MC",
                                             "LUMINOSITY"};
 
@@ -451,6 +451,11 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       gdata->SetMarkerStyle(20);
 
       TGraphErrors* graph = MakeTGraph(fit.M.col(1),ibin,fit.Y,fit.SysY);
+      //for ( auto& [name, mat]: fit.SysY ){
+      //   cout<<"template sysY "<<name<<" size "<<endl;
+      //   cout<<mat<<endl; //johannes
+      //}
+
       graph->Fit("pol1","Q");
       TF1* pol1w = (TF1*)graph->GetFunction("pol1")->Clone("pol1w");
       pol1w->SetLineColor(922);
@@ -478,7 +483,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       graph->GetFunction("pol1")->SetLineWidth(3);
       
       graph->Fit("pol2","QW");
-      graph->GetFunction("pol2")->SetLineWidth(83);
+      graph->GetFunction("pol2")->SetLineWidth(3);// johannes this was set to 83
 
       graph->SetMarkerStyle(47);
       graph->SetMarkerColor(kRed+2);
@@ -519,8 +524,9 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          graph->SetMinimum(0);
 
       graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
-
-      graph->Draw("ap");
+      graph->GetYaxis()->SetRangeUser(-18,0);
+      //graph->SetMinimum( -20 );
+      graph->Draw("APE0");
       if ( fit.GetLogNormal() )
          f1log->Draw("Lsame");
       else
@@ -532,7 +538,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
        graph->GetHistogram()->GetXaxis()->SetNdivisions(int(graph->GetN()/2)+1+200);
       //f2->Draw("same");
 
-      gdata->Draw("P");
+      gdata->Draw("PE0");
       
       if ( ibin==0 ) {
          double xmin = fit.GetLogNormal() ? 0.36 : 0.45;
@@ -1232,12 +1238,18 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
    bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1; 
    double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
+   //const string variable = "mbl_selected";
+   //const string variable = "mbwhad_selected";
+   //const string variable = "mwhadbbl";
+   const string variable = "minimax_whadbbl";
    if ( !useNuisanceParameter ) {
       for ( int i = 0 ; i<nPar ; i++ ) {
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
          
          for ( const string &source: uncertainties ) {
-            double error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i)));
+            double error = 0;
+            if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
+            else error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_"+variable+"_direct_envelope_"+source+"__1up")->second(i,i)));
             h->Fill(source.c_str(), error);
             sum_error += pow(error,2);
          }
@@ -1258,14 +1270,12 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
          
          for ( const string &source: uncertainties ) {
+
             double error = 0;
-            if ( source.find("STAT_DATA") != std::string::npos ) {
-               error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i)));
-            }
-            else if ( source.find("STAT_MC") != std::string::npos)
-               error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i,i)));
-            else
-               error = fabs(fit.DeltaSys.find("unfolding_error_mbl_selected_direct_envelope_"+source+"__1up")->second(i));
+            if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(i,i)));
+            else if ( source.find("STAT_MC") != std::string::npos) error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_"+variable+"_selected_direct_envelope_"+source+"__1up")->second(i,i)));
+            else error = fabs(fit.DeltaSys.find("unfolding_error_"+variable+"_direct_envelope_"+source+"__1up")->second(i));
+            
             h->Fill(source.c_str(), error);
             sum_error += pow(error,2);
          }
@@ -1284,11 +1294,10 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          TH1D* h1  = new TH1D("NP", "NP", uncertainties.size()+1, 0, uncertainties.size()+1);
          TGraphErrors* g = new TGraphErrors(uncertainties.size());
          for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
-            h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first);
-            h1->SetBinError(j,fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second);
-            g->SetPoint(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
-            g->SetPointError(j, fit.map_nuisance.find("unfolding_error_mbl_selected_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
-            //set errors;
+            h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.first);
+            h1->SetBinError(j,fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.second);
+            g->SetPoint(j, fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
+            g->SetPointError(j, fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
          }
          h1->SetBinContent(h1->GetNbinsX(), 0.);
          h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
