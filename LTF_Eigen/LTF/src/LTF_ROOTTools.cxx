@@ -171,9 +171,9 @@ TH1D* LTF_ROOTTools::MakeHistogram(const Eigen::VectorXd& values, vector<double>
 //!  since this is not included in LTF::LiTeFit
 //! 
 void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
-                 const string& yaxistitle,
-                 const string& referencename,
-                 const int& var_index ) 
+				const string& yaxistitle,
+				const string& xaxistitle,
+				const string& referencename) 
 {
    gStyle->SetOptStat(0);
    gSystem->mkdir("plots");
@@ -212,7 +212,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
       templates[iref]->SetLineWidth(2);
       if ( iref == 0 ) {
-         templates[0]->SetTitle(("Linear Template Fit;"+var_name_latex[var_index]+";"+yaxistitle).c_str());
+         templates[0]->SetTitle(("Linear Template Fit;"+xaxistitle+";"+yaxistitle).c_str());
          templates[0]->SetLineColor(kRed+1);
          if ( templates[0]->GetMaximum()>0 )templates[0]->SetMinimum(0);
          if ( !fit.GetLogNormal() ) 
@@ -393,14 +393,14 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
 
       std::map<string, double> error_summary;
 
-      error_summary.insert({"Lepton",           makeErrorPlot(c1, ps_name, "Lepton uncertainties", fit, lepton_uncertainties, var_index)});
-      error_summary.insert({"JES",              makeErrorPlot(c1, ps_name, "JES uncertainties", fit, jes_uncertainties, var_index)});
-      error_summary.insert({"JER",              makeErrorPlot(c1, ps_name, "JER uncertainties", fit, jer_uncertainties, var_index)});
-      error_summary.insert({"JVT+PileUp+MET",   makeErrorPlot(c1, ps_name, "JVT+PileUp+MET uncertainties", fit, jvt_pileup_met_uncertainties, var_index)});
-      error_summary.insert({"b-tagging",        makeErrorPlot(c1, ps_name, "b-tagging uncertainties", fit, b_tagging_uncertainties, var_index)});
-      error_summary.insert({"theory modelling", makeErrorPlot(c1, ps_name, "modelling uncertainties", fit, modelling_uncertainties, var_index)});
-      error_summary.insert({"bkgd modelling",   makeErrorPlot(c1, ps_name, "background uncertainties", fit, bkgd_uncertainties, var_index)});
-      error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties, var_index)});
+      error_summary.insert({"Lepton",           makeErrorPlot(c1, ps_name, "Lepton uncertainties", fit, lepton_uncertainties)});
+      error_summary.insert({"JES",              makeErrorPlot(c1, ps_name, "JES uncertainties", fit, jes_uncertainties)});
+      error_summary.insert({"JER",              makeErrorPlot(c1, ps_name, "JER uncertainties", fit, jer_uncertainties)});
+      error_summary.insert({"JVT+PileUp+MET",   makeErrorPlot(c1, ps_name, "JVT+PileUp+MET uncertainties", fit, jvt_pileup_met_uncertainties)});
+      error_summary.insert({"b-tagging",        makeErrorPlot(c1, ps_name, "b-tagging uncertainties", fit, b_tagging_uncertainties)});
+      error_summary.insert({"theory modelling", makeErrorPlot(c1, ps_name, "modelling uncertainties", fit, modelling_uncertainties)});
+      error_summary.insert({"bkgd modelling",   makeErrorPlot(c1, ps_name, "background uncertainties", fit, bkgd_uncertainties)});
+      error_summary.insert({"Stat.+Lumi",       makeErrorPlot(c1, ps_name, "statistical uncertainties", fit, other_uncertainties)});
 
       TH1D* h  = new TH1D("Full error breakdown", "Full error breakdown", error_summary.size()+1, 0, error_summary.size()+1);
       double sum_error_sq = 0;
@@ -482,7 +482,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       graph->GetFunction("pol1")->SetLineWidth(3);
       
       graph->Fit("pol2","QW");
-      graph->GetFunction("pol2")->SetLineWidth(3);// johannes this was set to 83
+      graph->GetFunction("pol2")->SetLineWidth(3);
 
       graph->SetMarkerStyle(47);
       graph->SetMarkerColor(kRed+2);
@@ -567,7 +567,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       
       text.SetTextSize(0.04);
       //text.DrawLatex(0.20,0.93,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
-      TString infotext = "_{ }<_{ }" + var_name_latex[var_index] + "_{ }<_{ }";
+      TString infotext = "_{ }<_{ }" + xaxistitle + "_{ }<_{ }";
       infotext.Prepend(Form("%3.0f", bins[ibin]));
       infotext.Append(Form("%3.0f", bins[ibin+1]));
       infotext.Append("_{}");
@@ -1215,22 +1215,19 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 }
 
 
-double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties, const int &var_index)
+double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties)
 {
    bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1; 
    double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
-   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
-   const string variable = var_name[var_index];
    if ( !useNuisanceParameter ) {
-
      for ( int i = 0 ; i<nPar ; i++ ) {
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
          
          for ( const string &source: uncertainties ) {
             double error = 0;
-            if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
-            else error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_"+variable+"_direct_envelope_"+source+"__1up")->second(i,i)));
+            //if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
+            //else error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_"+variable+"_direct_envelope_"+source+"__1up")->second(i,i)));
 	    
             h->Fill(source.c_str(), error);
             sum_error += pow(error,2);

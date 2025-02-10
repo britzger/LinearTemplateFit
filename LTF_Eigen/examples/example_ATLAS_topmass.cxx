@@ -71,22 +71,16 @@ int example_ATLAS_topmass() {
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   const int var_name_index = 0;
-   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
-   const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
+   //const int var_name_index = 0;
+   //const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
+   //const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
    const vector<TString> fit_vars = {"mbl_selected", "mbwhad_selected"};
    const vector<TString> fit_vars_short = {"m_bl", "m_bw"};
    
-   if ( !(var_name_index<var_name.size())  ) { cerr<<"Make sure to set var_name_index to a correct value!"<<endl; exit(1);}
-
-   const TString histname     = var_name_short[var_name_index];
-   const TString histnamedata = "unfolding_"+var_name[var_name_index]+"_NOSYS";
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
    const TString pseudodatafile     = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
    const TString datafile = "/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
-   //const TString datauncfile  = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/unfolding_SR_Whad_Final_l_Whad_particle_TUnfoldStandalone_OptionA_data_nonClosureAlternative.root";
-   const TString migmaname    = "h2_mupt2_4p";
    
    //double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
    //cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
@@ -106,9 +100,13 @@ int example_ATLAS_topmass() {
      }
      bin_offset += tmp_data->GetNbinsX();
    }
-   
-   TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
+   combined_data -> Rebin(iRebinData);
+   //combined_data->Scale(scale);
+   combined_data->SetLineColor(kBlack);
+   combined_data->SetMarkerSize(1.8);
 
+   /*   
+   TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
    double binning[9] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0};
    //TH1D* data_tmp      = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
    //TH1D* data      = new TH1D("data", "data", 8, binning);
@@ -163,7 +161,8 @@ int example_ATLAS_topmass() {
       templates[180] = template_6;
       templates[185] = template_7;
    }
-   else {
+   else */
+   {
      TH1D* combined_template_155 = new TH1D("combined_template_155", "combined_template_155", bins_number, 0, bins_number);
      TH1D* combined_template_160 = new TH1D("combined_template_160", "combined_template_160", bins_number, 0, bins_number);
      TH1D* combined_template_165 = new TH1D("combined_template_165", "combined_template_165", bins_number, 0, bins_number);
@@ -198,14 +197,14 @@ int example_ATLAS_topmass() {
      templates[175] = combined_template_175;
      templates[180] = combined_template_180;
      templates[185] = combined_template_185;
-   }
+     }
 
    for ( auto [MM,hist] : templates ) {
       hist->Rebin(iRebin);
       //hist->Scale(scale);
    }
    
-   PrintAsciiTable(templates,data);
+   PrintAsciiTable(templates,combined_data);
 
    // ------------------------------------------------ //
    // --- List of uncertainties
@@ -314,6 +313,7 @@ int example_ATLAS_topmass() {
      double corr = 1;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
+     cout<<"Added uncertainty "<<uncertainty<<endl;
    }
    // Stat uncertainties
    for ( auto& uncertainty: statistical_uncertainties ) {
@@ -370,24 +370,6 @@ int example_ATLAS_topmass() {
      combined_error.clear();
    }
 
-
-//   if ( title.find("_STAT_DATA")!= std::string::npos ) {
-//                  if ( !passDataCovMatrix ) ltf.AddErrorRelative("stat.", tmp, 0.0, LTF::Uncertainty::Constrained);
-//               }
-//               else if ( title.find("_STAT_MC")!= std::string::npos )                ltf.AddErrorRelative(title, tmp, 0.0, LTF::Uncertainty::Constrained);
-//               else if ( title.find("_FULL_SYS_SUM_")!= std::string::npos)           ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-//               else if ( title.find("_TOTAL_SYSONLY__1up")!= std::string::npos)      ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-//               else if ( title.find("_TOTAL__1up")!= std::string::npos)              ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-//               else if ( title.find("_TOTAL_NO_DR_DS__1up")!= std::string::npos)     ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-//               else  ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::Constrained);
-//            }
-//            else {
-//               continue;
-//            }
-//         }
-//      }
-//   }
-
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
 
@@ -400,7 +382,7 @@ int example_ATLAS_topmass() {
    }
    bins.push_back(combined_data->GetXaxis()->GetBinUpEdge(combined_data->GetNbinsX()));
 
-   LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx","",var_name_index);
+   LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx", "m_{bl}\t m_{bW}","m_{t} [GeV]");
    
    return 0;
 

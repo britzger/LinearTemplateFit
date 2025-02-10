@@ -79,8 +79,8 @@ TH1D* MakeHistogram(const Eigen::VectorXd& values, vector<double> bins ={}, cons
 static
 void plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
                  const string& yaxistitle    = "value [unit]",
-                 const string& referencename = "Reference value (#alpha) [unit]",
-                 const int& var_index = 0);
+		 const string& xaxistitle    = "value [unit]",
+		 const string& referencename = "Reference value (#alpha) [unit]");
 //const string& observablename = "Observable [unit]");
 
 
@@ -111,6 +111,6 @@ void plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<double>& bins,
                  const string& observablename = "Observable [unit]");
 
 static
-   double makeErrorPlot(TCanvas&, const string&, const char*, const LTF::LiTeFit& fit, const vector<string>&, const int&);
+   double makeErrorPlot(TCanvas&, const string&, const char*, const LTF::LiTeFit& fit, const vector<string>&);
 
 };
