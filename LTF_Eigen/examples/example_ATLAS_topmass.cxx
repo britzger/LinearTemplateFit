@@ -74,6 +74,7 @@ int example_ATLAS_topmass() {
    const int var_name_index = 1;
    const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
    const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
+   const vector<TString> fit_vars = {"m_bl", "m_bw"};
 
    if ( !(var_name_index<var_name.size())  ) { cerr<<"Make sure to set var_name_index to a correct value!"<<endl; exit(1);}
 
@@ -89,6 +90,24 @@ int example_ATLAS_topmass() {
    //double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
    //cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
 
+   int bins_number = 0;
+   for ( auto& tmp: fit_vars ) {
+     TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
+     bins_number += tmp_data->GetNbinsX();
+     tmp_data->Clear();
+   }
+   TH1D* combined_data = new TH1D("combined_data", "combined_data", bins_number, 0, bins_number);
+   int bin_offset = 0;
+   for ( auto& tmp: fit_vars ) {
+     TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
+     for ( int i = 1; i <= tmp_data->GetNbinsX(); i++ ) {
+       combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i));
+     }
+     bin_offset += tmp_data->GetNbinsX();
+     tmp_data->Print("All");
+     combined_data->Print("All");
+   }
+   
    TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
 
    double binning[9] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0};
@@ -146,7 +165,13 @@ int example_ATLAS_topmass() {
       templates[185] = template_7;
    }
    else {
-      templates[155] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
+     for ( auto& tmp: fit_vars ) {
+       //do the same as above Johannes
+     }
+
+
+
+       templates[155] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
       templates[160] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
       templates[165] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
       templates[170] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(histname);
