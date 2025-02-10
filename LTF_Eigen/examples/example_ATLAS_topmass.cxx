@@ -303,11 +303,7 @@ int example_ATLAS_topmass() {
 	   if (hist) {
 	     string title = hist->GetTitle();
 	     if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
-	       //if ( (title.find(uncertainty) != std::string::npos) &&  (title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-               cout<<"In the loop "<<title<<endl;
-               double* entries = hist->GetArray();
-	       hist->Print("All");
-               for (int i=1; i< hist->GetNbinsX(); i++) {
+	       for (int i=1; i< hist->GetNbinsX(); i++) {
 		 combined_error.push_back(hist->GetBinContent(i));
                }
 	     }
@@ -333,8 +329,6 @@ int example_ATLAS_topmass() {
            if (hist) {
              string title = hist->GetTitle();
              if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
-               double* entries = hist->GetArray();
-               hist->Print("All");
                for (int i=1; i< hist->GetNbinsX(); i++) {
                  combined_error.push_back(hist->GetBinContent(i));
                }
