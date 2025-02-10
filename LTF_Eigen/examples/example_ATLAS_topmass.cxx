@@ -211,32 +211,35 @@ int example_ATLAS_topmass() {
    // --- List of uncertainties
    // ------------------------------------------------ //
 
-   vector<string> uncertainties = {"EG_RESOLUTION_ALL",
-				   "EG_SCALE_ALL",
-				   "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR",
-				   "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
-				   "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR",
-				   "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR",
-				   "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR",
-				   "MUON_SAGITTA_DATASTAT",
-				   "MUON_SAGITTA_RESBIAS",
-				   "MUON_EFF_BADMUON_SYS",
-				   "MUON_EFF_ISO_STAT",
-				   "MUON_EFF_ISO_SYS",
-				   "MUON_EFF_RECO_STAT",
-				   "MUON_EFF_RECO_SYS",
-				   "MUON_EFF_TTVA_STAT",
-				   "MUON_EFF_TTVA_SYS",
-				   "MUON_EFF_TrigStatUncertainty",
-				   "MUON_EFF_TrigSystUncertainty"};
+   vector<string> uncertainties = {"EG_RESOLUTION_ALL", "EG_SCALE_ALL", "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
+     "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR", "MUON_SAGITTA_DATASTAT",
+     "MUON_SAGITTA_RESBIAS", "MUON_EFF_BADMUON_SYS", "MUON_EFF_ISO_STAT", "MUON_EFF_ISO_SYS", "MUON_EFF_RECO_STAT", "MUON_EFF_RECO_SYS", "MUON_EFF_TTVA_STAT",
+     "MUON_EFF_TTVA_SYS", "MUON_EFF_TrigStatUncertainty", "MUON_EFF_TrigSystUncertainty", // Lepton uncertainties
+     "JET_EffectiveNP_Detector1", "JET_EffectiveNP_Detector2", "JET_EffectiveNP_Mixed1", "JET_EffectiveNP_Mixed2", "JET_EffectiveNP_Mixed3", "JET_EffectiveNP_Modelling1",
+     "JET_EffectiveNP_Modelling2", "JET_EffectiveNP_Modelling3", "JET_EffectiveNP_Modelling4", "JET_EffectiveNP_Statistical1", "JET_EffectiveNP_Statistical2",
+     "JET_EffectiveNP_Statistical3", "JET_EffectiveNP_Statistical4", "JET_EffectiveNP_Statistical5", "JET_EffectiveNP_Statistical6", "JET_EtaIntercalibration_Modelling",
+     "JET_EtaIntercalibration_NonClosure_2018data", "JET_EtaIntercalibration_NonClosure_highE", "JET_EtaIntercalibration_NonClosure_negEta",
+     "JET_EtaIntercalibration_NonClosure_posEta", "JET_EtaIntercalibration_TotalStat", "JET_Flavor_Composition_prop", "JET_Flavor_Response_prop",
+     "JET_Pileup_OffsetMu", "JET_Pileup_OffsetNPV", "JET_Pileup_PtTerm", "JET_Pileup_RhoTopology", "JET_PunchThrough_MC16", // JES uncertainty
+     "JET_JER_DataVsMC_MC16_PseudoData", "JET_JER_EffectiveNP_1_PseudoData", "JET_JER_EffectiveNP_2_PseudoData", "JET_JER_EffectiveNP_3_PseudoData",
+     "JET_JER_EffectiveNP_4_PseudoData", "JET_JER_EffectiveNP_5_PseudoData", "JET_JER_EffectiveNP_6_PseudoData", "JET_JER_EffectiveNP_7_PseudoData",
+     "JET_JER_EffectiveNP_8_PseudoData", "JET_JER_EffectiveNP_9_PseudoData", "JET_JER_EffectiveNP_10_PseudoData", "JET_JER_EffectiveNP_11_PseudoData",
+     "JET_JER_EffectiveNP_12restTerm_PseudoData", // JER uncertainty
+     "JET_JvtEfficiency", "PRW_DATASF", "MET_SoftTrk_ResoPara", "MET_SoftTrk_ResoPerp", "MET_SoftTrk_Scale", "WMASS_VAR_signal", //MET+JVT+PileUp
+     "FT_EFF_Eigen_B_0", "FT_EFF_Eigen_B_1", "FT_EFF_Eigen_B_2", "FT_EFF_Eigen_B_3", "FT_EFF_Eigen_B_4", "FT_EFF_Eigen_B_5", "FT_EFF_Eigen_B_6", "FT_EFF_Eigen_B_7",
+     "FT_EFF_Eigen_B_8", "FT_EFF_Eigen_C_0", "FT_EFF_Eigen_C_1", "FT_EFF_Eigen_C_2", "FT_EFF_Eigen_C_3", "FT_EFF_Eigen_Light_0", "FT_EFF_Eigen_Light_1",
+     "FT_EFF_Eigen_Light_2", "FT_EFF_Eigen_Light_3", "FT_EFF_extrapolation", "FT_EFF_extrapolation_from_charm", // b-tagging uncertainties
+     "THEORY_CROSS_SECTION_signal", "THEORY_SHOWERING_HERWIG7_signal", "THEORY_SCALE_FACTORISATION_signal", "THEORY_SCALE_RENORMALISATION_signal",
+     "THEORY_ISR_signal", "THEORY_FSR_signal", "THEORY_HDAMP_signal", "THEORY_PTHARD_signal", "THEORY_TOPRECOIL_signal", "THEORY_TOP_MASS_signal",
+     "THEORY_PDF4LHC_VARIATION_signal", "THEORY_DR_DS_signal", // modelling uncertainties
+     "THEORY_CROSS_SECTION_Wjets", "THEORY_SCALE_COMBINED_Wjets", "THEORY_PDF4LHC_VARIATION_Wjets", "THEORY_EWK_Wjets", "THEORY_SCALE_COMBINED_multiboson_noW",
+     "THEORY_PDF4LHC_VARIATION_multiboson_noW", "THEORY_EWK_multiboson_noW", "THEORY_CROSS_SECTION_other_top_noWt", "FAKES_Electron", "FAKES_Muon", // bkgd uncertainties
+     "LUMINOSITY" // lumi uncertainty
+   };
 
-   vector<string> external_uncertainties = {};
-
-
-
-
-
-
+   vector<string> statistical_uncertainties = {"STAT_DATA", "STAT_MC"};
+   
+   vector<string> external_uncertainties = {"FULL_SYS_SUM", "TOTAL_SYSONLY", "TOTAL", "TOTAL_NO_DR_DS"};
 
    // ------------------------------------------------ //
    // ---  Do linear template fit
@@ -248,7 +251,6 @@ int example_ATLAS_topmass() {
    ltf.UseLogNormalUncertainties(true);
 
    // --- initialize templates
-   int test_tmp = 1;
    for ( auto [MM,hist] : templates ) {
       ltf.AddTemplate(MM,  hist->GetNbinsX(),  hist->GetArray()+1 ); // set template
       //for(int i = 1; i <= hist->GetNbinsX(); i++) {hist->SetBinError(i, std::sqrt(hist->GetBinContent(i)));}
@@ -256,7 +258,6 @@ int example_ATLAS_topmass() {
       cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
    }
 
-   cout<<"Johannes Add data"<<endl;
    // --- initialize data
    ltf.SetData( combined_data->GetNbinsX(), combined_data->GetArray()+1);
    //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
@@ -285,17 +286,16 @@ int example_ATLAS_topmass() {
       ltf.AddErrorRelative("stat.", vecCov2);
    }
    */
-     
-   // Get the list of keys in the file (this represents all objects)
 
-   cout<<"Johannes Add uncertainties to data"<<endl;
+   // Systematical uncertainties
    for ( auto& uncertainty: uncertainties ) {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
-       // Loop over all keys (objects) in the file
+       // Get the list of keys in the file (this represents all objects)
        TIter next(file->GetListOfKeys());
        TObject *obj;
        TKey* key;
+       // Loop over all keys (objects) in the file
        while ((key = (TKey*) next())) {
 	 obj = file->Get<TObject>(key->GetName());
 	 if (obj->InheritsFrom("TH1D")) {
@@ -315,13 +315,12 @@ int example_ATLAS_topmass() {
 	 }
        }
      }
-     cout<<"Number of bins: "<<combined_error.size()<<endl;
      double corr = 1;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
-   cout<<"Johannes Add stat uncertainty"<<endl;
-   {
+   // Stat uncertainties
+   for ( auto& uncertainty: statistical_uncertainties ) {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
        TIter next(file->GetListOfKeys());
@@ -333,8 +332,7 @@ int example_ATLAS_topmass() {
            std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
            if (hist) {
              string title = hist->GetTitle();
-             if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_STAT_DATA__1up") != std::string::npos) {
-               cout<<"In the loop "<<title<<endl;
+             if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
                double* entries = hist->GetArray();
                hist->Print("All");
                for (int i=1; i< hist->GetNbinsX(); i++) {
@@ -345,17 +343,15 @@ int example_ATLAS_topmass() {
          }
        }
      }
-     cout<<"Number of bins: "<<combined_error.size()<<endl;
      double corr = 0;
-     if ( combined_error.size() > 0 ) ltf.AddErrorRelative("STAT_DATA", combined_error, corr, LTF::Uncertainty::Constrained);
+     if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
 
-   cout<<"Johannes Add external uncertainties to data"<<endl;
+   // External uncertainties
    for ( auto& uncertainty: external_uncertainties ) {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
-       // Loop over all keys (objects) in the file
        TIter next(file->GetListOfKeys());
        TObject *obj;
        TKey* key;
