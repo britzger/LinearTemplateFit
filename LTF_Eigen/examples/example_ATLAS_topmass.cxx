@@ -71,11 +71,12 @@ int example_ATLAS_topmass() {
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   const int var_name_index = 1;
+   const int var_name_index = 0;
    const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
    const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
-   const vector<TString> fit_vars = {"m_bl", "m_bw"};
-
+   const vector<TString> fit_vars = {"mbl_selected", "mbwhad_selected"};
+   const vector<TString> fit_vars_short = {"m_bl", "m_bw"};
+   
    if ( !(var_name_index<var_name.size())  ) { cerr<<"Make sure to set var_name_index to a correct value!"<<endl; exit(1);}
 
    const TString histname     = var_name_short[var_name_index];
@@ -91,14 +92,14 @@ int example_ATLAS_topmass() {
    //cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
 
    int bins_number = 0;
-   for ( auto& tmp: fit_vars ) {
+   for ( auto& tmp: fit_vars_short ) {
      TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
      bins_number += tmp_data->GetNbinsX();
      tmp_data->Clear();
    }
    TH1D* combined_data = new TH1D("combined_data", "combined_data", bins_number, 0, bins_number);
    int bin_offset = 0;
-   for ( auto& tmp: fit_vars ) {
+   for ( auto& tmp: fit_vars_short ) {
      TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
      for ( int i = 1; i <= tmp_data->GetNbinsX(); i++ ) {
        combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i));
@@ -171,7 +172,7 @@ int example_ATLAS_topmass() {
      TH1D* combined_template_180 = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
      TH1D* combined_template_185 = new TH1D("combined_template_185", "combined_template_185", bins_number, 0, bins_number);
      int bin_offset = 0;
-     for ( auto& tmp: fit_vars ) {
+     for ( auto& tmp: fit_vars_short ) {
        TH1D* h_tmp_155 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(tmp);
        TH1D* h_tmp_165 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(tmp);
@@ -197,9 +198,7 @@ int example_ATLAS_topmass() {
      templates[175] = combined_template_175;
      templates[180] = combined_template_180;
      templates[185] = combined_template_185;
-     
    }
-   exit(0);
 
    for ( auto [MM,hist] : templates ) {
       hist->Rebin(iRebin);
@@ -207,6 +206,37 @@ int example_ATLAS_topmass() {
    }
    
    PrintAsciiTable(templates,data);
+
+   // ------------------------------------------------ //
+   // --- List of uncertainties
+   // ------------------------------------------------ //
+
+   vector<string> uncertainties = {"EG_RESOLUTION_ALL",
+				   "EG_SCALE_ALL",
+				   "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR",
+				   "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
+				   "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR",
+				   "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR",
+				   "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR",
+				   "MUON_SAGITTA_DATASTAT",
+				   "MUON_SAGITTA_RESBIAS",
+				   "MUON_EFF_BADMUON_SYS",
+				   "MUON_EFF_ISO_STAT",
+				   "MUON_EFF_ISO_SYS",
+				   "MUON_EFF_RECO_STAT",
+				   "MUON_EFF_RECO_SYS",
+				   "MUON_EFF_TTVA_STAT",
+				   "MUON_EFF_TTVA_SYS",
+				   "MUON_EFF_TrigStatUncertainty",
+				   "MUON_EFF_TrigSystUncertainty"};
+
+   vector<string> external_uncertainties = {};
+
+
+
+
+
+
 
    // ------------------------------------------------ //
    // ---  Do linear template fit
@@ -226,9 +256,9 @@ int example_ATLAS_topmass() {
       cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
    }
 
-
+   cout<<"Johannes Add data"<<endl;
    // --- initialize data
-   ltf.SetData( data->GetNbinsX(), data->GetArray()+1);
+   ltf.SetData( combined_data->GetNbinsX(), combined_data->GetArray()+1);
    //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
    
    std::unique_ptr<TFile> file(TFile::Open(datafile));
@@ -237,7 +267,7 @@ int example_ATLAS_topmass() {
       std::cerr << "Error: Couldn't open the file!" << std::endl;
       return 1;
    }
-
+   /*
    bool passDataCovMatrix = true;
    if ( passDataCovMatrix ) {
       TString histnameCovStat(histnamedata); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
@@ -254,42 +284,119 @@ int example_ATLAS_topmass() {
       }
       ltf.AddErrorRelative("stat.", vecCov2);
    }
-
+   */
+     
    // Get the list of keys in the file (this represents all objects)
-   TIter next(file->GetListOfKeys());
-   TObject *obj;
-   TKey* key;
-   // Loop over all keys (objects) in the file   
-   while ((key = (TKey*) next())) {
-      obj = file->Get<TObject>(key->GetName());
-      if (obj->InheritsFrom("TH1D")) {
-         std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
-         if (hist) {
-            string title = hist->GetTitle();
-            if ((title.find("unfolding_error_"+var_name[var_name_index]+"_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-               cout<<title<<endl;
-               vector<double> tmp;
+
+   cout<<"Johannes Add uncertainties to data"<<endl;
+   for ( auto& uncertainty: uncertainties ) {
+     vector<double> combined_error;
+     for ( auto& fit_variable: fit_vars ) {
+       // Loop over all keys (objects) in the file
+       TIter next(file->GetListOfKeys());
+       TObject *obj;
+       TKey* key;
+       while ((key = (TKey*) next())) {
+	 obj = file->Get<TObject>(key->GetName());
+	 if (obj->InheritsFrom("TH1D")) {
+	   std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
+	   if (hist) {
+	     string title = hist->GetTitle();
+	     if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
+	       //if ( (title.find(uncertainty) != std::string::npos) &&  (title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) && (title.find("__1up") != std::string::npos)){
+               cout<<"In the loop "<<title<<endl;
                double* entries = hist->GetArray();
+	       hist->Print("All");
                for (int i=1; i< hist->GetNbinsX(); i++) {
-                  tmp.push_back(hist->GetBinContent(i));
+		 combined_error.push_back(hist->GetBinContent(i));
                }
-               double corr = 1;
-               if ( title.find("_STAT_DATA")!= std::string::npos ) {
-                  if ( !passDataCovMatrix ) ltf.AddErrorRelative("stat.", tmp, 0.0, LTF::Uncertainty::Constrained);
-               }
-               else if ( title.find("_STAT_MC")!= std::string::npos )                ltf.AddErrorRelative(title, tmp, 0.0, LTF::Uncertainty::Constrained);
-               else if ( title.find("_FULL_SYS_SUM_")!= std::string::npos)           ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-               else if ( title.find("_TOTAL_SYSONLY__1up")!= std::string::npos)      ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-               else if ( title.find("_TOTAL__1up")!= std::string::npos)              ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-               else if ( title.find("_TOTAL_NO_DR_DS__1up")!= std::string::npos)     ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
-               else  ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::Constrained);
-            }
-            else {
-               continue;
-            }
-         }
-      }
+	     }
+	   }
+	 }
+       }
+     }
+     cout<<"Number of bins: "<<combined_error.size()<<endl;
+     double corr = 1;
+     if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
+     combined_error.clear();
    }
+   cout<<"Johannes Add stat uncertainty"<<endl;
+   {
+     vector<double> combined_error;
+     for ( auto& fit_variable: fit_vars ) {
+       TIter next(file->GetListOfKeys());
+       TObject *obj;
+       TKey* key;
+       while ((key = (TKey*) next())) {
+         obj = file->Get<TObject>(key->GetName());
+         if (obj->InheritsFrom("TH1D")) {
+           std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
+           if (hist) {
+             string title = hist->GetTitle();
+             if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_STAT_DATA__1up") != std::string::npos) {
+               cout<<"In the loop "<<title<<endl;
+               double* entries = hist->GetArray();
+               hist->Print("All");
+               for (int i=1; i< hist->GetNbinsX(); i++) {
+                 combined_error.push_back(hist->GetBinContent(i));
+               }
+             }
+           }
+         }
+       }
+     }
+     cout<<"Number of bins: "<<combined_error.size()<<endl;
+     double corr = 0;
+     if ( combined_error.size() > 0 ) ltf.AddErrorRelative("STAT_DATA", combined_error, corr, LTF::Uncertainty::Constrained);
+     combined_error.clear();
+   }
+
+   cout<<"Johannes Add external uncertainties to data"<<endl;
+   for ( auto& uncertainty: external_uncertainties ) {
+     vector<double> combined_error;
+     for ( auto& fit_variable: fit_vars ) {
+       // Loop over all keys (objects) in the file
+       TIter next(file->GetListOfKeys());
+       TObject *obj;
+       TKey* key;
+       while ((key = (TKey*) next())) {
+         obj = file->Get<TObject>(key->GetName());
+         if (obj->InheritsFrom("TH1D")) {
+           std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
+           if (hist) {
+             string title = hist->GetTitle();
+	     if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
+	       double* entries = hist->GetArray();
+               for (int i=1; i< hist->GetNbinsX(); i++) {
+                 combined_error.push_back(hist->GetBinContent(i));
+               }
+             }
+           }
+         }
+       }
+     }
+     double corr = 1;
+     if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::External);
+     combined_error.clear();
+   }
+
+
+//   if ( title.find("_STAT_DATA")!= std::string::npos ) {
+//                  if ( !passDataCovMatrix ) ltf.AddErrorRelative("stat.", tmp, 0.0, LTF::Uncertainty::Constrained);
+//               }
+//               else if ( title.find("_STAT_MC")!= std::string::npos )                ltf.AddErrorRelative(title, tmp, 0.0, LTF::Uncertainty::Constrained);
+//               else if ( title.find("_FULL_SYS_SUM_")!= std::string::npos)           ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+//               else if ( title.find("_TOTAL_SYSONLY__1up")!= std::string::npos)      ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+//               else if ( title.find("_TOTAL__1up")!= std::string::npos)              ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+//               else if ( title.find("_TOTAL_NO_DR_DS__1up")!= std::string::npos)     ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+//               else  ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::Constrained);
+//            }
+//            else {
+//               continue;
+//            }
+//         }
+//      }
+//   }
 
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
@@ -298,12 +405,11 @@ int example_ATLAS_topmass() {
    //fit.DoIterativeFitTaylor();
    //fit.PrintFull();
    vector<double> bins{};
-   for(int i = 1; i <= data->GetNbinsX(); i++) {
-      bins.push_back(data->GetBinLowEdge(i));
+   for(int i = 1; i <= combined_data->GetNbinsX(); i++) {
+      bins.push_back(combined_data->GetBinLowEdge(i));
    }
-   bins.push_back(data->GetXaxis()->GetBinUpEdge(data->GetNbinsX()));
+   bins.push_back(combined_data->GetXaxis()->GetBinUpEdge(combined_data->GetNbinsX()));
 
-   double* bins1 = data->GetArray()+1;
    LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx","",var_name_index);
    
    return 0;
