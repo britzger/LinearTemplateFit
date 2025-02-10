@@ -1290,8 +1290,9 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
          for ( int i = 0 ; i<dY.rows() ; i++ ) {
             for ( int j = 0 ; j<dY.cols() ; j++ ) {
                auto dYijDYij = dYijs[i][j].col(0) * dY(i,j); // error propagation
-               if ( corr == 1 )   // correlated
+               if ( corr == 1 ) { // correlated
                   DeltaSysY[name]  +=  dYijDYij; 
+               }
                else {             // uncorrelated (apply sqrt below!)
                   for ( int kk = 0 ; kk<nPar ; kk++ ) {
                      DeltaSysY[name](kk)  +=  dYijDYij(kk,0) * dYijDYij(kk,0); // coefficient wise pow(2);
@@ -1299,11 +1300,11 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
                }
             }
          }
-         if ( corr == 0 ) 
+         if ( corr == 0 ) {
             DeltaSysY[name] =  DeltaSysY[name].cwiseSqrt().eval();
+         }
       }
    }
-   
    // ---- propagate response matrix uncertainties
    if ( this->SysA.size() ) { // only if !LogNormal
       // --- partial derivatives

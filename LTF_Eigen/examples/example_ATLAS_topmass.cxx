@@ -71,9 +71,9 @@ int example_ATLAS_topmass() {
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   const int var_name_index = 4;
-   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected"};
-   const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw"};
+   const int var_name_index = 9;
+   const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
+   const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
 
    if ( !(var_name_index<var_name.size())  ) { cerr<<"Make sure to set var_name_index to a correct value!"<<endl; exit(1);}
 
@@ -94,75 +94,72 @@ int example_ATLAS_topmass() {
    
    //double scale = TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral();
    //cout<<"Integral "<<TFile::Open(datafile)->Get<TH1D>(histnamedata)->Integral()<<endl;
-   TH1D* data_tmp      = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now                                                                          
+
+   TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
+
    double binning[9] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0};
-   TH1D* data      = new TH1D("data", "data", 8, binning);
-   for ( int i =1; i <= data->GetNbinsX(); i++) {
-      data->SetBinContent(i, data_tmp->GetBinContent(i));
-      data->SetBinError(i, data_tmp->GetBinError(i));
-   }
+   //TH1D* data_tmp      = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
+   //TH1D* data      = new TH1D("data", "data", 8, binning);
+   //for ( int i =1; i <= data->GetNbinsX(); i++) {
+   //   data->SetBinContent(i, data_tmp->GetBinContent(i));
+   //   data->SetBinError(i, data_tmp->GetBinError(i));
+   //}
    data -> Rebin(iRebinData);
    //data->Scale(scale);
    data->SetLineColor(kBlack);
    data->SetMarkerSize(1.8);
 
-   
-
-   TH1D* template_1_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
-   TH1D* template_2_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
-   TH1D* template_3_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
-   TH1D* template_4_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(histname);
-   TH1D* template_5_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(histname);
-   TH1D* template_6_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(histname);
-   TH1D* template_7_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(histname);
-
-
-   TH1D* template_1   = new TH1D("template_155", "template_155", 8, binning);
-   TH1D* template_2   = new TH1D("template_160", "template_160", 8, binning);
-   TH1D* template_3   = new TH1D("template_165", "template_165", 8, binning);
-   TH1D* template_4   = new TH1D("template_170", "template_170", 8, binning);
-   TH1D* template_5   = new TH1D("template_175", "template_175", 8, binning);
-   TH1D* template_6   = new TH1D("template_180", "template_180", 8, binning);
-   TH1D* template_7   = new TH1D("template_185", "template_185", 8, binning);
-   for ( int i =1; i <= data->GetNbinsX(); i++) {
-      template_1->SetBinContent(i, template_1_tmp->GetBinContent(i));
-      template_1->SetBinError(  i, template_1_tmp->GetBinError(i));
-      template_2->SetBinContent(i, template_2_tmp->GetBinContent(i));
-      template_2->SetBinError(  i, template_2_tmp->GetBinError(i));
-      template_3->SetBinContent(i, template_3_tmp->GetBinContent(i));
-      template_3->SetBinError(  i, template_3_tmp->GetBinError(i));
-      template_4->SetBinContent(i, template_4_tmp->GetBinContent(i));
-      template_4->SetBinError(  i, template_4_tmp->GetBinError(i));
-      template_5->SetBinContent(i, template_5_tmp->GetBinContent(i));
-      template_5->SetBinError(  i, template_5_tmp->GetBinError(i));
-      template_6->SetBinContent(i, template_6_tmp->GetBinContent(i));
-      template_6->SetBinError(  i, template_6_tmp->GetBinError(i));
-      template_7->SetBinContent(i, template_7_tmp->GetBinContent(i));
-      template_7->SetBinError(  i, template_7_tmp->GetBinError(i));
+   if ( var_name_index == 4 || var_name_index == 5 ) {
+      
+      TH1D* template_1_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
+      TH1D* template_2_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
+      TH1D* template_3_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
+      TH1D* template_4_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(histname);
+      TH1D* template_5_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(histname);
+      TH1D* template_6_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(histname);
+      TH1D* template_7_tmp = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(histname);
+      
+      TH1D* template_1   = new TH1D("template_155", "template_155", 8, binning);
+      TH1D* template_2   = new TH1D("template_160", "template_160", 8, binning);
+      TH1D* template_3   = new TH1D("template_165", "template_165", 8, binning);
+      TH1D* template_4   = new TH1D("template_170", "template_170", 8, binning);
+      TH1D* template_5   = new TH1D("template_175", "template_175", 8, binning);
+      TH1D* template_6   = new TH1D("template_180", "template_180", 8, binning);
+      TH1D* template_7   = new TH1D("template_185", "template_185", 8, binning);
+      for ( int i =1; i <= data->GetNbinsX(); i++) {
+         template_1->SetBinContent(i, template_1_tmp->GetBinContent(i));
+         template_1->SetBinError(  i, template_1_tmp->GetBinError(i));
+         template_2->SetBinContent(i, template_2_tmp->GetBinContent(i));
+         template_2->SetBinError(  i, template_2_tmp->GetBinError(i));
+         template_3->SetBinContent(i, template_3_tmp->GetBinContent(i));
+         template_3->SetBinError(  i, template_3_tmp->GetBinError(i));
+         template_4->SetBinContent(i, template_4_tmp->GetBinContent(i));
+         template_4->SetBinError(  i, template_4_tmp->GetBinError(i));
+         template_5->SetBinContent(i, template_5_tmp->GetBinContent(i));
+         template_5->SetBinError(  i, template_5_tmp->GetBinError(i));
+         template_6->SetBinContent(i, template_6_tmp->GetBinContent(i));
+         template_6->SetBinError(  i, template_6_tmp->GetBinError(i));
+         template_7->SetBinContent(i, template_7_tmp->GetBinContent(i));
+         template_7->SetBinError(  i, template_7_tmp->GetBinError(i));
+      }
+      
+      templates[155] = template_1;
+      templates[160] = template_2;
+      templates[165] = template_3;
+      templates[170] = template_4;
+      templates[175] = template_5;
+      templates[180] = template_6;
+      templates[185] = template_7;
    }
-
-   templates[155] = template_1;
-   templates[160] = template_2;
-   templates[165] = template_3;
-   templates[170] = template_4;
-   templates[175] = template_5;
-   templates[180] = template_6;
-   templates[185] = template_7;
-   
-
-   //TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname);
-   //data -> Rebin(iRebinData);
-   ////data->Scale(scale);
-   //data->SetLineColor(kBlack);
-   //data->SetMarkerSize(1.8);
-   //templates[155] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
-   //templates[160] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
-   //templates[165] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
-   //templates[170] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(histname);
-   //templates[175] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(histname);
-   //templates[180] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(histname);
-   //templates[185] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(histname);
-
+   else {
+      templates[155] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
+      templates[160] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
+      templates[165] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
+      templates[170] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(histname);
+      templates[175] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(histname);
+      templates[180] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(histname);
+      templates[185] = TFile::Open("/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(histname);
+   }
 
 
    for ( auto [MM,hist] : templates ) {
@@ -185,19 +182,11 @@ int example_ATLAS_topmass() {
    int test_tmp = 1;
    for ( auto [MM,hist] : templates ) {
       ltf.AddTemplate(MM,  hist->GetNbinsX(),  hist->GetArray()+1 ); // set template
-      hist->Sumw2();
-      ltf.AddTemplateErrorSquared("statY", MM , hist->GetNbinsX(), hist->GetSumw2()->GetArray()+1, 0.); // set template error dY
+      //for(int i = 1; i <= hist->GetNbinsX(); i++) {hist->SetBinError(i, std::sqrt(hist->GetBinContent(i)));}
+      ltf.AddTemplateErrorSquared("statY", MM , hist->GetNbinsX(), hist->GetSumw2()->GetArray()+1, 0.); // set template error dY //Johannes add the correct value to the template root files!
       cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
-     
    }
 
-   // In case you need to rebin by hand (e.g. to remove the last (overflow) bin
-   //double bin_edges[] = {0,   40,  80,  120, 160, 200, 280, 360, 480, 640, 960};
-   //TH1D* tmp_data = new TH1D("h1", "h1", 10, bin_edges);
-   //for ( int i = 1; i <= tmp_data->GetNbinsX(); i++ ) {
-   //   tmp_data->SetBinContent(i, data->GetBinContent(i));
-   //   tmp_data->SetBinError(i, std::sqrt(data->GetBinContent(i)));
-   //}
 
    // --- initialize data
    ltf.SetData( data->GetNbinsX(), data->GetArray()+1);
@@ -254,9 +243,6 @@ int example_ATLAS_topmass() {
          if (hist) {
             string title = hist->GetTitle();
             if ((title.find("unfolding_error_"+var_name[var_name_index]+"_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-            //if ((title.find("unfolding_error_mbwhad_selected_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-            //if ((title.find("unfolding_error_mwhadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
-            //if ((title.find("unfolding_error_minimax_whadbbl_direct_envelope_") != std::string::npos) && (title.find("__1up") != std::string::npos)){
                cout<<title<<endl;
                vector<double> tmp;
                double* entries = hist->GetArray();
@@ -271,6 +257,7 @@ int example_ATLAS_topmass() {
                else if ( title.find("_FULL_SYS_SUM_")!= std::string::npos)           ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
                else if ( title.find("_TOTAL_SYSONLY__1up")!= std::string::npos)      ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
                else if ( title.find("_TOTAL__1up")!= std::string::npos)              ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
+               else if ( title.find("_TOTAL_NO_DR_DS__1up")!= std::string::npos)     ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::External);
                else  ltf.AddErrorRelative(title, tmp, corr, LTF::Uncertainty::Constrained);
             }
             else {
