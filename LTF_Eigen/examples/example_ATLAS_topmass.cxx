@@ -79,12 +79,6 @@ int example_ATLAS_topmass() {
 
    const TString histname     = var_name_short[var_name_index];
    const TString histnamedata = "unfolding_"+var_name[var_name_index]+"_NOSYS";
-   //const TString histname     = "m_bw";
-   //const TString histnamedata = "unfolding_mbwhad_selected_NOSYS";
-   //const TString histname     = "m_wbbl";
-   //const TString histnamedata = "unfolding_mwhadbbl_NOSYS";
-   //const TString histname     = "m_minimax";
-   //const TString histnamedata = "unfolding_minimax_whadbbl_NOSYS";
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
    const TString pseudodatafile     = "/ptmp/mpp/jhessler/LTF/LinearTemplateFit/LTF_ROOT/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root";
@@ -192,12 +186,6 @@ int example_ATLAS_topmass() {
    ltf.SetData( data->GetNbinsX(), data->GetArray()+1);
    //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
    
-   // --- initialize data uncertainties
-   //data->Sumw2(); // only for now
-   //TH1D* data_ref = TFile::Open(datauncfile)->Get<TH1D>(histnamedata);
-   //data_ref->Print("All");
-
-  
    std::unique_ptr<TFile> file(TFile::Open(datafile));
 
    if (!file || file->IsOpen() == kFALSE) {
@@ -220,22 +208,13 @@ int example_ATLAS_topmass() {
          cout<<endl;
       }
       ltf.AddErrorRelative("stat.", vecCov2);
-      //cov_stat_dat->Print("all");
-      //cout<<"data"<<endl;
-      //data->Print("all");
-      //cout<<"data"<<endl;
-      //data->Print("all");
-      //cout<<"Ndata points in templates: "<<templates[170]->GetNbinsX()<<endl;
-      //cout<<"Template: " <<endl;
-      //templates[170]->Print("all");
    }
 
    // Get the list of keys in the file (this represents all objects)
    TIter next(file->GetListOfKeys());
    TObject *obj;
    TKey* key;
-   // Loop over all keys (objects) in the file
-   
+   // Loop over all keys (objects) in the file   
    while ((key = (TKey*) next())) {
       obj = file->Get<TObject>(key->GetName());
       if (obj->InheritsFrom("TH1D")) {
@@ -266,12 +245,6 @@ int example_ATLAS_topmass() {
          }
       }
    }
-   //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
-
-   // for ( const auto& s : shiftsnuisance ) ltf.AddError("",N,s->GetArray()+1,1.);
-   // for ( const auto& s : shifts ) ltf.AddError("",N,s->GetArray()+1,1.);
-   // for ( const auto& s : shifts ) ltf.AddError("",N,s->GetArray()+1,0.5,LTF::Uncertainty::External);
-   
 
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();

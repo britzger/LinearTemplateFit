@@ -453,10 +453,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       gdata->SetMarkerStyle(20);
 
       TGraphErrors* graph = MakeTGraph(fit.M.col(1),ibin,fit.Y,fit.SysY);
-      //for ( auto& [name, mat]: fit.SysY ){
-      //   cout<<"template sysY "<<name<<" size "<<endl;
-      //   cout<<mat<<endl; //johannes
-      //}
 
       graph->Fit("pol1","Q");
       TF1* pol1w = (TF1*)graph->GetFunction("pol1")->Clone("pol1w");
@@ -567,11 +563,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       text.SetTextFont(42);
       text.SetTextAlign(11);
       text.SetTextSize(0.05);
-      //text.DrawLatex(0.20,0.20,Form("Bin %d",ibin));
-      // text.DrawLatex(0.20,0.30,"CMS inclusive jets");
-      // text.SetTextSize(0.04);
-      // text.DrawLatex(0.20,0.25,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
-      // text.DrawLatex(0.20,0.20,Form("%3.0f_{ }<_{ }p_{T}_{ }<_{ }%3.0f_{ }GeV",input_table["ptlow"][ibin],input_table["pthigh"][ibin]));
       
       text.SetTextSize(0.04);
       //text.DrawLatex(0.20,0.93,Form("%3.1f_{ }<_{ }|y|_{ }<_{ }%3.1f",input_table["ylow"][ibin],input_table["yhigh"][ibin]));
@@ -580,13 +571,6 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       infotext.Append(Form("%3.0f", bins[ibin+1]));
       infotext.Append("_{}");
       text.DrawLatex(0.20,0.93, infotext);
-
-/*
-      cout<<input_table["ylow"][ibin]<<"\t"
-          <<input_table["yhigh"][ibin]<<"\t"
-          <<input_table["ptlow"][ibin]<<"\t"
-          <<input_table["pthigh"][ibin]<<endl;
-*/
 
       c1.Print(ps_name);
       if ( fit.GetLogNormal() )
@@ -907,11 +891,9 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
    // sanity check
    if ( M.cols() != 2 ) {cout<<"Error! only 1-dim plotting implemented."<<endl;exit(1);}
    Eigen::VectorXd reference_values = M.col(1);
-   //TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
    
    map<double,TH1D*> templates;
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
-      //double ref = reference_values(iref);
       templates[iref] = MakeHistogram(fit.Y.col(iref),bins);
    }
 
@@ -922,7 +904,6 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
    c1.SetRightMargin(0.05);
    c1.SetLeftMargin(0.15);
    c1.SetTopMargin(0.08);
-   // c1.SetRightMargin(0.02);
 
    const char* ps_name = fit.GetLogNormal() ?
       "LTFlog_plots.ps" :
@@ -1006,8 +987,6 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
    map < string, vector<double> > input_table = read_input_table2("data/CMS_data.txt",32);
 
    for ( int ibin = 0 ; ibin<fit.Dt.size() ; ibin++ ) {
-   //for ( int ibin = 0 ; ibin<0 ; ibin++ ) {
-   //for ( int ibin = 0 ; ibin<6 ; ibin++ ) {
       //TGraphErrors* data  = MakeTGraph(fit.ahat.row(0),fit.Dt.row(ibin));
       TGraphErrors* gdata = new TGraphErrors();
       gdata->SetPoint(0,fit.ahat(0),fit.Dt(ibin));
@@ -1242,10 +1221,6 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
    double sum_error = 0; // this needs to be a vector in the case of more than 1 parameter
    const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
    const string variable = var_name[var_index];
-   //const string variable = "mbl_selected";
-   //const string variable = "mbwhad_selected";
-   //const string variable = "mwhadbbl";
-   //const string variable = "minimax_whadbbl";
    if ( !useNuisanceParameter ) {
       for ( int i = 0 ; i<nPar ; i++ ) {
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
