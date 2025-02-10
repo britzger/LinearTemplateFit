@@ -1224,13 +1224,15 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
    const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
    const string variable = var_name[var_index];
    if ( !useNuisanceParameter ) {
-      for ( int i = 0 ; i<nPar ; i++ ) {
+
+     for ( int i = 0 ; i<nPar ; i++ ) {
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
          
          for ( const string &source: uncertainties ) {
             double error = 0;
             if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
             else error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_"+variable+"_direct_envelope_"+source+"__1up")->second(i,i)));
+	    
             h->Fill(source.c_str(), error);
             sum_error += pow(error,2);
          }
@@ -1249,19 +1251,21 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          c.Divide(2,1);
          c.cd(1);
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
-         
-         for ( const string &source: uncertainties ) {
 
-            double error = 0;
-            if (source.find("stat.")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(i,i)));
-            else if ( source.find("STAT_MC") != std::string::npos) error = std::sqrt(fabs(fit.Vsource.find("unfolding_error_"+variable+"_selected_direct_envelope_"+source+"__1up")->second(i,i)));
-            else error = fabs(fit.DeltaSys.find("unfolding_error_"+variable+"_direct_envelope_"+source+"__1up")->second(i));
-            
-            h->Fill(source.c_str(), error);
-            sum_error += pow(error,2);
-         }
-         
-         h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
+	 for ( auto& [name, value]: fit.Vsource ) cout<<name<<": "<<value(1,1)<<endl;
+	 for ( auto& [name, value]: fit.DeltaSys) cout<<name<<": "<<value(0)<<endl;
+	 for ( const string &source: uncertainties ) {
+
+	   double error = 0;
+	   
+	   if (source.find("STAT_DATA")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
+	   //    //else if stat mc
+	   else error = fabs(fit.DeltaSys.find(source)->second(i));
+	   h->Fill(source.c_str(), error);
+	   sum_error += pow(error,2);
+	 }
+	 
+	 h->SetBinContent(h->GetNbinsX(), std::sqrt(sum_error));
          h->GetXaxis()->SetBinLabel(h->GetNbinsX(), "Total unc.");
          h->SetBarOffset(0.1);
          h->SetBarWidth(0.8);
@@ -1275,10 +1279,10 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          TH1D* h1  = new TH1D("NP", "NP", uncertainties.size()+1, 0, uncertainties.size()+1);
          TGraphErrors* g = new TGraphErrors(uncertainties.size());
          for ( long unsigned int j = 0; j < uncertainties.size(); j++ ) {
-            h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.first);
-            h1->SetBinError(j,fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.second);
-            g->SetPoint(j, fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.first, j+0.5);
-            g->SetPointError(j, fit.map_nuisance.find("unfolding_error_"+variable+"_direct_envelope_"+uncertainties[j]+"__1up")->second.second, 0);
+	    h1->Fill(uncertainties[j].c_str(), fit.map_nuisance.find(uncertainties[j])->second.first);
+            h1->SetBinError(j,fit.map_nuisance.find(uncertainties[j])->second.second);
+            g->SetPoint(j, fit.map_nuisance.find(uncertainties[j])->second.first, j+0.5);
+            g->SetPointError(j, fit.map_nuisance.find(uncertainties[j])->second.second, 0);
          }
          h1->SetBinContent(h1->GetNbinsX(), 0.);
          h1->GetXaxis()->SetBinLabel(h1->GetNbinsX(), "");
