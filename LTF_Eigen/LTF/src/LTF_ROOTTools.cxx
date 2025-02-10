@@ -1248,15 +1248,12 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          c.cd(1);
          TH1D* h  = new TH1D(title, title, uncertainties.size()+1, 0, uncertainties.size()+1);
 
-	 for ( auto& [name, value]: fit.Vsource ) cout<<name<<": "<<value(1,1)<<endl;
-	 for ( auto& [name, value]: fit.DeltaSys) cout<<name<<": "<<value(0)<<endl;
 	 for ( const string &source: uncertainties ) {
-
 	   double error = 0;
-	   
-	   if (source.find("STAT_DATA")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
-	   //    //else if stat mc
-	   else error = fabs(fit.DeltaSys.find(source)->second(i));
+	   //if (source.find("STAT_DATA")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
+	   //else if (source.find("STAT_MC")!= std::string::npos ) error = std::sqrt(fabs(fit.Vsource.find(source)->second(1,1)));
+	   //else
+	   error = fabs(fit.DeltaSys.find(source)->second(i));
 	   h->Fill(source.c_str(), error);
 	   sum_error += pow(error,2);
 	 }

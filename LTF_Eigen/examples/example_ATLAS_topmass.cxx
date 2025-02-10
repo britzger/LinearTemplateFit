@@ -290,51 +290,22 @@ int example_ATLAS_topmass() {
    for ( auto& uncertainty: uncertainties ) {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
-       // Get the list of keys in the file (this represents all objects)
-       TIter next(file->GetListOfKeys());
-       TObject *obj;
-       TKey* key;
-       // Loop over all keys (objects) in the file
-       while ((key = (TKey*) next())) {
-	 obj = file->Get<TObject>(key->GetName());
-	 if (obj->InheritsFrom("TH1D")) {
-	   std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
-	   if (hist) {
-	     string title = hist->GetTitle();
-	     if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
-	       for (int i=1; i< hist->GetNbinsX(); i++) {
-		 combined_error.push_back(hist->GetBinContent(i));
-               }
-	     }
-	   }
-	 }
+       TH1D* hist = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
+       for (int i=1; i< hist->GetNbinsX(); i++) {
+	 combined_error.push_back(hist->GetBinContent(i));
        }
      }
      double corr = 1;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
-     cout<<"Added uncertainty "<<uncertainty<<endl;
    }
    // Stat uncertainties
    for ( auto& uncertainty: statistical_uncertainties ) {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
-       TIter next(file->GetListOfKeys());
-       TObject *obj;
-       TKey* key;
-       while ((key = (TKey*) next())) {
-         obj = file->Get<TObject>(key->GetName());
-         if (obj->InheritsFrom("TH1D")) {
-           std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
-           if (hist) {
-             string title = hist->GetTitle();
-             if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
-               for (int i=1; i< hist->GetNbinsX(); i++) {
-                 combined_error.push_back(hist->GetBinContent(i));
-               }
-             }
-           }
-         }
+       TH1D* hist = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
+       for (int i=1; i< hist->GetNbinsX(); i++) {
+         combined_error.push_back(hist->GetBinContent(i));
        }
      }
      double corr = 0;
@@ -346,23 +317,9 @@ int example_ATLAS_topmass() {
    for ( auto& uncertainty: external_uncertainties ) {
      vector<double> combined_error;
      for ( auto& fit_variable: fit_vars ) {
-       TIter next(file->GetListOfKeys());
-       TObject *obj;
-       TKey* key;
-       while ((key = (TKey*) next())) {
-         obj = file->Get<TObject>(key->GetName());
-         if (obj->InheritsFrom("TH1D")) {
-           std::unique_ptr<TH1D> hist(dynamic_cast<TH1D*>(obj));
-           if (hist) {
-             string title = hist->GetTitle();
-	     if ( title.find("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up") != std::string::npos) {
-	       double* entries = hist->GetArray();
-               for (int i=1; i< hist->GetNbinsX(); i++) {
-                 combined_error.push_back(hist->GetBinContent(i));
-               }
-             }
-           }
-         }
+       TH1D* hist = file->Get<TH1D>("unfolding_error_"+fit_variable+"_direct_envelope_"+uncertainty+"__1up");
+       for (int i=1; i< hist->GetNbinsX(); i++) {
+         combined_error.push_back(hist->GetBinContent(i));
        }
      }
      double corr = 1;
