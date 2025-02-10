@@ -104,8 +104,6 @@ int example_ATLAS_topmass() {
        combined_data->SetBinContent(i+bin_offset, tmp_data->GetBinContent(i));
      }
      bin_offset += tmp_data->GetNbinsX();
-     tmp_data->Print("All");
-     combined_data->Print("All");
    }
    
    TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
@@ -165,21 +163,43 @@ int example_ATLAS_topmass() {
       templates[185] = template_7;
    }
    else {
+     TH1D* combined_template_155 = new TH1D("combined_template_155", "combined_template_155", bins_number, 0, bins_number);
+     TH1D* combined_template_160 = new TH1D("combined_template_160", "combined_template_160", bins_number, 0, bins_number);
+     TH1D* combined_template_165 = new TH1D("combined_template_165", "combined_template_165", bins_number, 0, bins_number);
+     TH1D* combined_template_170 = new TH1D("combined_template_170", "combined_template_170", bins_number, 0, bins_number);
+     TH1D* combined_template_175 = new TH1D("combined_template_175", "combined_template_175", bins_number, 0, bins_number);
+     TH1D* combined_template_180 = new TH1D("combined_template_180", "combined_template_180", bins_number, 0, bins_number);
+     TH1D* combined_template_185 = new TH1D("combined_template_185", "combined_template_185", bins_number, 0, bins_number);
+     int bin_offset = 0;
      for ( auto& tmp: fit_vars ) {
-       //do the same as above Johannes
+       TH1D* h_tmp_155 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_160 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_165 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_170 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_175 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_180 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(tmp);
+       TH1D* h_tmp_185 = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(tmp);
+       for ( int i = 1; i<= h_tmp_155->GetNbinsX(); i++ ) {
+	 combined_template_155->SetBinContent(i+bin_offset, h_tmp_155->GetBinContent(i));
+	 combined_template_160->SetBinContent(i+bin_offset, h_tmp_160->GetBinContent(i));
+	 combined_template_165->SetBinContent(i+bin_offset, h_tmp_165->GetBinContent(i));
+	 combined_template_170->SetBinContent(i+bin_offset, h_tmp_170->GetBinContent(i));
+	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i));
+	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i));
+	 combined_template_185->SetBinContent(i+bin_offset, h_tmp_185->GetBinContent(i));
+       }
+       bin_offset =+ h_tmp_155->GetNbinsX();
      }
-
-
-
-       templates[155] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_155_1258.root")->Get<TH1D>(histname);
-      templates[160] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_160_1256.root")->Get<TH1D>(histname);
-      templates[165] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_165_1246.root")->Get<TH1D>(histname);
-      templates[170] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_170_1248.root")->Get<TH1D>(histname);
-      templates[175] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_175_1250.root")->Get<TH1D>(histname);
-      templates[180] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_180_1252.root")->Get<TH1D>(histname);
-      templates[185] = TFile::Open("/home/iwsatlas1/jhessler/LTF/LinearTemplateFit/LTF_Eigen/examples/data/output/Ana_S3beta_Cluster_H_mtop_185_1254.root")->Get<TH1D>(histname);
+     templates[155] = combined_template_155;
+     templates[160] = combined_template_160;
+     templates[165] = combined_template_165;
+     templates[170] = combined_template_170;
+     templates[175] = combined_template_175;
+     templates[180] = combined_template_180;
+     templates[185] = combined_template_185;
+     
    }
-
+   exit(0);
 
    for ( auto [MM,hist] : templates ) {
       hist->Rebin(iRebin);
