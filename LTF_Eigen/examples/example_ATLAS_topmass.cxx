@@ -74,8 +74,8 @@ int example_ATLAS_topmass() {
    //const int var_name_index = 0;
    //const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
    //const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
-   const vector<TString> fit_vars = {"mbl_selected", "mbwhad_selected"};
-   const vector<TString> fit_vars_short = {"m_bl", "m_bw"};
+   const vector<TString> fit_vars = {"mbl_selected", "mbwhad_selected", "mwhadbbl"};
+   const vector<TString> fit_vars_short = {"m_bl", "m_bw", "m_wbbl"};
    
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
@@ -88,9 +88,11 @@ int example_ATLAS_topmass() {
    int bins_number = 0;
    for ( auto& tmp: fit_vars_short ) {
      TH1D* tmp_data = TFile::Open(pseudodatafile)->Get<TH1D>(tmp);
+     cout<<"Adding "<<tmp_data->GetNbinsX()<<" bins for variable "<<tmp<<endl;
      bins_number += tmp_data->GetNbinsX();
      tmp_data->Clear();
    }
+
    TH1D* combined_data = new TH1D("combined_data", "combined_data", bins_number, 0, bins_number);
    int bin_offset = 0;
    for ( auto& tmp: fit_vars_short ) {
@@ -104,7 +106,9 @@ int example_ATLAS_topmass() {
    //combined_data->Scale(scale);
    combined_data->SetLineColor(kBlack);
    combined_data->SetMarkerSize(1.8);
-
+   cout<<"This is the new data hist"<<endl;
+   combined_data->Print("All");
+   
    /*   
    TH1D* data = TFile::Open(pseudodatafile)->Get<TH1D>(histname); // pseudo data, use Sherpa 3 with m_t = 170 GeV for now
    double binning[9] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0};
@@ -188,7 +192,7 @@ int example_ATLAS_topmass() {
 	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i));
 	 combined_template_185->SetBinContent(i+bin_offset, h_tmp_185->GetBinContent(i));
        }
-       bin_offset =+ h_tmp_155->GetNbinsX();
+       bin_offset += h_tmp_155->GetNbinsX();
      }
      templates[155] = combined_template_155;
      templates[160] = combined_template_160;
@@ -205,7 +209,6 @@ int example_ATLAS_topmass() {
    }
    
    PrintAsciiTable(templates,combined_data);
-
    // ------------------------------------------------ //
    // --- List of uncertainties
    // ------------------------------------------------ //
