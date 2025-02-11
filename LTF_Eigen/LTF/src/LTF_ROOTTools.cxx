@@ -171,6 +171,7 @@ TH1D* LTF_ROOTTools::MakeHistogram(const Eigen::VectorXd& values, vector<double>
 //!  since this is not included in LTF::LiTeFit
 //! 
 void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& bins, 
+				const char*   ps_name,
 				const string& yaxistitle,
 				const string& xaxistitle,
 				const string& referencename) 
@@ -184,7 +185,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    Eigen::VectorXd reference_values = M.col(1);
    //TH1D* hist = new TH1D("hist","hist",bins.size()-1, &bins[0]);
    
-   const vector<string> var_name_latex = {"m_{bl}", "m_{bW}", "m_{Wbbl}", "m_{Wb,bl}^{minimax}", "#Delta R(b,l)", "#Delta R(b,W)", "p_{T}(l)",  "p_{T}(b_{1})", "m(W_{had})", "y(W_{had})"};
+   //const vector<string> var_name_latex = {"m_{bl}", "m_{bW}", "m_{Wbbl}", "m_{Wb,bl}^{minimax}", "#Delta R(b,l)", "#Delta R(b,W)", "p_{T}(l)",  "p_{T}(b_{1})", "m(W_{had})", "y(W_{had})"};
 
    map<double,TH1D*> templates;
    for ( int iref = 0 ; iref<reference_values.size() ; iref++ ) {
@@ -201,11 +202,10 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    c1.SetTopMargin(0.08);
    // c1.SetRightMargin(0.02);
 
-   const char* ps_name = fit.GetLogNormal() ?
-      "plots/LTFlog_plots.ps" :
-      "plots/LTF_plots.ps";
+   //const char* ps_name = fit.GetLogNormal() ?
+   //   "plots/LTFlog_plots.ps" :
+   //   "plots/LTF_plots.ps";
    c1.Print( (string(ps_name)+"[").c_str() );
-
    // ---------------------------------------------- //
    // main plot
    // ---------------------------------------------- //
@@ -259,7 +259,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
    legend.Draw();
 
    c1.Print(ps_name);
-   c1.Print("plots/LTF_plot.pdf");
+   //c1.Print("plots/LTF_plot.pdf");
 
 
    // ---------------------------------------------- //
@@ -574,10 +574,10 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
       text.DrawLatex(0.20,0.93, infotext);
 
       c1.Print(ps_name);
-      if ( fit.GetLogNormal() )
-         c1.Print( Form("plots/LTFlog_bin_%02d.pdf",ibin));
-      else
-         c1.Print( Form("plots/LTF_bin_%02d.pdf",ibin));
+      //if ( fit.GetLogNormal() )
+      //   c1.Print( Form("plots/LTFlog_bin_%02d.pdf",ibin));
+      //else
+      //   c1.Print( Form("plots/LTF_bin_%02d.pdf",ibin));
       
    }
    
@@ -648,10 +648,9 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
     }
        
     c1.Print(ps_name);
-    c1.Print( "plots/LTF_chi2.pdf");
+    //c1.Print( "plots/LTF_chi2.pdf");
 
     c1.Print( (string(ps_name)+"]").c_str() );
-   
 }
 
 
@@ -1215,7 +1214,7 @@ void LTF_ROOTTools::plotLiTeFitPol2Test(const LTF::LiTeFit& fit, const vector<do
 }
 
 
-double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties)
+double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const char* ps_name, const char* title, const LTF::LiTeFit& fit, const vector<string> &uncertainties)
 {
    bool useNuisanceParameter = true;
    int nPar = 1; //M.cols()-1; 
@@ -1302,7 +1301,7 @@ double LTF_ROOTTools::makeErrorPlot(TCanvas& c, const string& ps_name, const cha
          l->SetLineStyle(3);
          l->Draw("same");
 
-         c.Print(ps_name.c_str());
+         c.Print(ps_name);
          c.Clear();
          h->Delete();
          h1->Delete();

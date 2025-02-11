@@ -62,7 +62,7 @@ int main(int ,const char **) {
 }
 #endif
 
-int fitMultipleObservables(const vector<TString> fit_vars, const vector<TString> fit_vars_short) {
+int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, const vector<TString> fit_vars_short) {
    using namespace std;
 
 #ifdef __CLING__
@@ -342,7 +342,7 @@ int fitMultipleObservables(const vector<TString> fit_vars, const vector<TString>
    }
    bins.push_back(combined_data->GetXaxis()->GetBinUpEdge(combined_data->GetNbinsX()));
 
-   LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx", "m_{bl}\t m_{bW}","m_{t} [GeV]");
+   LTF_ROOTTools::plotLiTeFit(fit, bins, ps_name, "1/#sigma d#sigma/dx", "m_{bl}\t m_{bW}","m_{t} [GeV]");
 
    return 0;
 }
@@ -354,8 +354,8 @@ int example_ATLAS_topmass() {
   const vector<TString> fit_vars = {"mbl_selected"};
   const vector<TString> fit_vars_short = {"m_bl"};
 
-  if (fitMultipleObservables(fit_vars, fit_vars_short) > 0) return 1;
-  if (fitMultipleObservables(fit_vars, fit_vars_short) > 0) return 1;
+  if (fitMultipleObservables("plots/test1.ps", fit_vars, fit_vars_short) > 0) return 1;
+  if (fitMultipleObservables("plots/test2.ps", fit_vars, fit_vars_short) > 0) return 1;
 
 
   return 0;
