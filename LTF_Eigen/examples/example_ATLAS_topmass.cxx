@@ -236,7 +236,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 
    vector<string> statistical_uncertainties = {"STAT_DATA", "STAT_MC"};
    
-   vector<string> external_uncertainties = {"FULL_SYS_SUM", "TOTAL_SYSONLY", "TOTAL", "TOTAL_NO_DR_DS"};
+   vector<string> external_uncertainties = {"FULL_SYS_SUM", "FULL_SYS_SUM_DETECTOR", "FULL_SYS_SUM_THEORY", "TOTAL_SYSONLY", "TOTAL", "TOTAL_NO_DR_DS", "FULL_SYS_TOYS"};
 
    // ------------------------------------------------ //
    // ---  Do linear template fit
@@ -352,7 +352,7 @@ int example_ATLAS_topmass() {
   //const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
   
   if (fitMultipleObservables("plots/test_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-  if (fitMultipleObservables("plots/test_mbw.ps", {"mbwhad_selected"}, {"m_bw"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/test_mbw.ps", {"mbwhad_selected"}, {"m_bw"}) > 0) return 1;
 
   return 0;
 }
