@@ -62,7 +62,7 @@ int main(int ,const char **) {
 }
 #endif
 
-int example_ATLAS_topmass() {
+int fitMultipleObservables(const vector<TString> fit_vars, const vector<TString> fit_vars_short) {
    using namespace std;
 
 #ifdef __CLING__
@@ -74,8 +74,8 @@ int example_ATLAS_topmass() {
    //const int var_name_index = 0;
    //const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
    //const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
-   const vector<TString> fit_vars = {"mbl_selected", "mbwhad_selected", "mwhadbbl"};
-   const vector<TString> fit_vars_short = {"m_bl", "m_bw", "m_wbbl"};
+   //const vector<TString> fit_vars = {"mbl_selected"};
+   //const vector<TString> fit_vars_short = {"m_bl"};
    
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
@@ -106,7 +106,7 @@ int example_ATLAS_topmass() {
    //combined_data->Scale(scale);
    combined_data->SetLineColor(kBlack);
    combined_data->SetMarkerSize(1.8);
-   cout<<"This is the new data hist"<<endl;
+   cout<<"This is the new combined data hist"<<endl;
    combined_data->Print("All");
    
    /*   
@@ -343,9 +343,22 @@ int example_ATLAS_topmass() {
    bins.push_back(combined_data->GetXaxis()->GetBinUpEdge(combined_data->GetNbinsX()));
 
    LTF_ROOTTools::plotLiTeFit(fit, bins,"1/#sigma d#sigma/dx", "m_{bl}\t m_{bW}","m_{t} [GeV]");
-   
-   return 0;
 
+   return 0;
+}
+
+
+int example_ATLAS_topmass() {
+
+
+  const vector<TString> fit_vars = {"mbl_selected"};
+  const vector<TString> fit_vars_short = {"m_bl"};
+
+  if (fitMultipleObservables(fit_vars, fit_vars_short) > 0) return 1;
+  if (fitMultipleObservables(fit_vars, fit_vars_short) > 0) return 1;
+
+
+  return 0;
 }
 
 
