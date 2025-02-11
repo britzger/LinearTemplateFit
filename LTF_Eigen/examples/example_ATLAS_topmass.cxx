@@ -71,11 +71,6 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    TH1::SetDefaultSumw2(true);
 
    map<double,TH1D*> templates;
-   //const int var_name_index = 0;
-   //const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
-   //const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
-   //const vector<TString> fit_vars = {"mbl_selected"};
-   //const vector<TString> fit_vars_short = {"m_bl"};
    
    const int     iRebin       = 1;
    const int     iRebinData   = 1;
@@ -353,10 +348,11 @@ int example_ATLAS_topmass() {
 
   const vector<TString> fit_vars = {"mbl_selected"};
   const vector<TString> fit_vars_short = {"m_bl"};
-
-  if (fitMultipleObservables("plots/test1.ps", fit_vars, fit_vars_short) > 0) return 1;
-  if (fitMultipleObservables("plots/test2.ps", fit_vars, fit_vars_short) > 0) return 1;
-
+  //const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
+  //const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
+  
+  if (fitMultipleObservables("plots/test_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
+  if (fitMultipleObservables("plots/test_mbw.ps", {"mbwhad_selected"}, {"m_bw"}) > 0) return 1;
 
   return 0;
 }
