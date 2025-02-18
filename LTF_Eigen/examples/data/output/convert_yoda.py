@@ -20,28 +20,48 @@ fName = str(sys.argv[1])
 yodaAOs = yoda.read(fName) # creates dictionary holding all the hists
 
 rtFile = rt.TFile(fName[:fName.find('.yoda.gz')] + '.root', 'recreate')
-#rtFile = rt.TFile(fName[:fName.find('.yoda')] + '.root', 'recreate')
 
 for name in yodaAOs:
   print("Now processing "+name)
-  yodaAO = yodaAOs[name];  # gets the histogram
-  rtAO = None
-  #if 'Histo1D' in str(yodaAO):
-
-  if 'Estimate1D' in str(yodaAO):
-    if type(yodaAO.xEdges()[0]) is str:
-      continue
-      #print("Type "+str(type(yodaAO.xEdges()[0])))
-    #if type(yodaAO.xEdges()[0]) is not str:
-      #print("Passed")
+  yodaAO = yodaAOs[name];  rtAO = None
+  if 'Histo1D' in str(yodaAO):
     rtAO = rt.TH1D(name, '', yodaAO.numBins(), array('d', yodaAO.xEdges()))
-    values = yodaAO.vals()
     rtAO.Sumw2(); rtErrs = rtAO.GetSumw2()
     for i in range(rtAO.GetNbinsX()):
-      rtAO.SetBinContent(i + 1, values[i])
-      #rtErrs.AddAt(yodaAO.bin(i+1).sumW2(), i+1)
-  
+      rtAO.SetBinContent(i + 1, yodaAO.bin(i+1).sumW())
+      rtErrs.AddAt(yodaAO.bin(i+1).sumW2(), i+1)
+  elif 'Histo2D' in str(yodaAO):
+    if type(yodaAO.xEdges()[0]) is str:
+      continue
+    rtAO = rt.TH2D(name, '', yodaAO.numBinsX(), array('d', yodaAO.xEdges()), yodaAO.numBinsY(), array('d', yodaAO.yEdges()))
+    for j in range(len(yodaAO.yEdges()) + 1):
+      for i in range(len(yodaAO.xEdges()) + 1 ):
+        bin_weight = yodaAO.bin(i,j).sumW()
+        bin_weight2 = yodaAO.bin(i,j).sumW2()
+        rtAO.SetBinContent(i,j, bin_weight)
+        rtAO.SetBinError(i,j, m.sqrt(bin_weight2))
+### For objects of the estimate class you need to change the name (drop "/RAW")
+#  elif 'Estimate1D' in str(yodaAO):
+#    if type(yodaAO.xEdges()[0]) is str:
+#      continue
+#    rtAO = rt.TH1D(name, '', yodaAO.numBins(), array('d', yodaAO.xEdges()))
+#    values = yodaAO.vals()
+#    err = yodaAO.mkScatter().errs(1)
+#    for i in range(rtAO.GetNbinsX()):
+#      rtAO.SetBinContent(i + 1, values[i])
+#      rtAO.SetBinError(i + 1, err[i][0])
+#
+#  elif 'Estimate2D' in str(yodaAO):
+#    if type(yodaAO.xEdges()[0]) is str:
+#      continue
+#    rtAO = rt.TH2D(name, '', yodaAO.numBinsX(), array('d', yodaAO.xEdges()), yodaAO.numBinsY(), array('d', yodaAO.yEdges()))
+#    content = yodaAO.vals()
+#    #err = yodaAO.mkScatter().errs(2)                                                                                                                                                                       
+#    for i in range(len(yodaAO.xEdges()) - 1):
+#      for j in range(len(yodaAO.yEdges()) - 1):
+#        rtAO.SetBinContent(i+1,j+1, content[i*(len(yodaAO.yEdges())-1)+j])
 
+  ### This is not tested yet
   elif 'Scatter2D' in str(yodaAO):
     rtAO = rt.TGraphAsymmErrors(yodaAO.numPoints())
     for i in range(yodaAO.numPoints()):
