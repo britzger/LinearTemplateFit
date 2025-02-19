@@ -186,6 +186,14 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 combined_template_175->SetBinContent(i+bin_offset, h_tmp_175->GetBinContent(i));
 	 combined_template_180->SetBinContent(i+bin_offset, h_tmp_180->GetBinContent(i));
 	 combined_template_185->SetBinContent(i+bin_offset, h_tmp_185->GetBinContent(i));
+
+	 combined_template_155->SetBinError(i+bin_offset, h_tmp_155->GetBinError(i));
+         combined_template_160->SetBinError(i+bin_offset, h_tmp_160->GetBinError(i));
+         combined_template_165->SetBinError(i+bin_offset, h_tmp_165->GetBinError(i));
+         combined_template_170->SetBinError(i+bin_offset, h_tmp_170->GetBinError(i));
+         combined_template_175->SetBinError(i+bin_offset, h_tmp_175->GetBinError(i));
+         combined_template_180->SetBinError(i+bin_offset, h_tmp_180->GetBinError(i));
+         combined_template_185->SetBinError(i+bin_offset, h_tmp_185->GetBinError(i));
        }
        bin_offset += h_tmp_155->GetNbinsX();
      }
@@ -203,12 +211,14 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
       //hist->Scale(scale);
    }
    
-   PrintAsciiTable(templates,combined_data);
    // ------------------------------------------------ //
    // --- List of uncertainties
    // ------------------------------------------------ //
 
-   vector<string> uncertainties = {"EG_RESOLUTION_ALL", "EG_SCALE_ALL", "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
+   //vector<string> uncertainties = {"WMASS_VAR_signal"};
+   
+   vector<string> uncertainties = {
+     "EG_RESOLUTION_ALL", "EG_SCALE_ALL", "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR",
      "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR", "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR", "MUON_SAGITTA_DATASTAT",
      "MUON_SAGITTA_RESBIAS", "MUON_EFF_BADMUON_SYS", "MUON_EFF_ISO_STAT", "MUON_EFF_ISO_SYS", "MUON_EFF_RECO_STAT", "MUON_EFF_RECO_SYS", "MUON_EFF_TTVA_STAT",
      "MUON_EFF_TTVA_SYS", "MUON_EFF_TrigStatUncertainty", "MUON_EFF_TrigSystUncertainty", // Lepton uncertainties
@@ -250,14 +260,15 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    // --- initialize templates
    for ( auto [MM,hist] : templates ) {
       ltf.AddTemplate(MM,  hist->GetNbinsX(),  hist->GetArray()+1 ); // set template
-      //for(int i = 1; i <= hist->GetNbinsX(); i++) {hist->SetBinError(i, std::sqrt(hist->GetBinContent(i)));}
-      ltf.AddTemplateErrorSquared("statY", MM , hist->GetNbinsX(), hist->GetSumw2()->GetArray()+1, 0.); // set template error dY //Johannes add the correct value to the template root files!
-      cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
+      //for(int i = 1; i <= hist->GetNbinsX(); i++) { cout<<hist->GetBinContent(i)<<"\t"<<hist->GetBinError(i)<<"\t"<<std::sqrt((hist->GetSumw2()->GetArray())[i])<<endl;}
+      //for(int i = 1; i <= hist->GetNbinsX(); i++) { cout<<hist->GetBinContent(i)<<"\t"<<hist->GetBinError(i)<<"\t"<<std::sqrt((hist->GetSumw2()->GetArray()+1)[i-1])<<endl;}
+      ltf.AddTemplateErrorSquared("statY", MM , hist->GetNbinsX(), hist->GetSumw2()->GetArray()+1, 0.); // set template error dY
+      
+      //cout<<"MM: "<<MM<<"\tnBins: "<<hist->GetNbinsX()<<endl;
    }
 
    // --- initialize data
    ltf.SetData( combined_data->GetNbinsX(), combined_data->GetArray()+1);
-   //ltf.AddUncorrelatedErrorSquared("stat.", data->GetNbinsX(), data->GetSumw2()->GetArray()+1);
    
    std::unique_ptr<TFile> file(TFile::Open(datafile));
 
@@ -268,13 +279,13 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
    /*
    bool passDataCovMatrix = true;
    if ( passDataCovMatrix ) {
-      TString histnameCovStat(histnamedata); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
+      TString histnameCovStat("unfolding_"+fit_vars[0]+"_NOSYS"); // "unfolding_mbl_selected_NOSYS"  ->  unfolding_covariance_matrix_ptl1_covariance_STAT_DATA
       histnameCovStat.ReplaceAll("unfolding_","unfolding_covariance_matrix_");
       histnameCovStat.ReplaceAll("_NOSYS","_covariance_STAT_DATA");
       TH2D* cov_stat_dat = TFile::Open(datafile)->Get<TH2D>(histnameCovStat);
       if ( !cov_stat_dat ) { cerr<<"Could not find covariance matrix " << histnameCovStat <<endl; exit(1);}
       else cout<<"Found covarinace matrix "<<histnameCovStat<<endl;
-   
+      cov_stat_dat->Print("All");
       vector<vector<double > > vecCov2 = TH2D_to_vecvec(cov_stat_dat);
       for ( auto& tmp_vec: vecCov2 ){
          for ( auto& tmp: tmp_vec ) cout<<tmp<<"\t";
@@ -283,7 +294,7 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
       ltf.AddErrorRelative("stat.", vecCov2);
    }
    */
-
+   
    // Systematical uncertainties
    for ( auto& uncertainty: uncertainties ) {
      vector<double> combined_error;
@@ -293,10 +304,17 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 	 combined_error.push_back(hist->GetBinContent(i));
        }
      }
-     double corr = 1;
+     double corr = 1.0;
      if ( combined_error.size() > 0 ) ltf.AddErrorRelative(uncertainty, combined_error, corr, LTF::Uncertainty::Constrained);
      combined_error.clear();
    }
+   
+   // --- Add one systematical uncertainty of 10% in every bin.
+   //vector<double> my_error = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+   //ltf.AddErrorRelative("MyUncertainty10", my_error, 1.0, LTF::Uncertainty::Constrained);
+   //vector<double> my_error1 = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
+   //ltf.AddErrorRelative("MyUncertainty1", my_error1, 1.0, LTF::Uncertainty::Constrained);
+   
    // Stat uncertainties
    for ( auto& uncertainty: statistical_uncertainties ) {
      vector<double> combined_error;
@@ -325,6 +343,8 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
      combined_error.clear();
    }
 
+   PrintAsciiTable(templates,combined_data);
+
    LTF::LiTeFit fit = ltf.DoLiTeFit();
    fit.PrintFull();
 
@@ -347,14 +367,13 @@ int fitMultipleObservables(const char* ps_name, const vector<TString> fit_vars, 
 int example_ATLAS_topmass() {
 
 
-  const vector<TString> fit_vars = {"mbl_selected"};
-  const vector<TString> fit_vars_short = {"m_bl"};
   //const vector<string> var_name = {"mbl_selected", "mbwhad_selected", "mwhadbbl", "minimax_whadbbl", "dRbl_selected", "dRbwhad_selected", "ptl1", "ptb1", "mwhad", "rapiditywhad"};
   //const vector<string> var_name_short = {"m_bl", "m_bw", "m_wbbl", "m_minimax", "dr_bl", "dr_bw", "pT_lep1", "pT_bjet1", "m_whad", "y_whad"};
   
   if (fitMultipleObservables("plots/fit_mbl.ps", {"mbl_selected"},    {"m_bl"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
-  if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
+  if (fitMultipleObservables("plots/fit_ptl1.ps", {"ptl1"},    {"pT_lep1"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw.ps", {"mbl_selected", "mbwhad_selected"}, {"m_bl", "m_bw"}) > 0) return 1;
+  //if (fitMultipleObservables("plots/fit_mbl_mbw_ptb1.ps", {"mbl_selected", "mbwhad_selected", "ptb1"}, {"m_bl", "m_bw", "pT_bjet1"}) > 0) return 1;
 
   return 0;
 }
