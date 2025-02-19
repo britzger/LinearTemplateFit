@@ -523,7 +523,7 @@ void LTF_ROOTTools::plotLiTeFit(const LTF::LiTeFit& fit, const vector<double>& b
          graph->SetMinimum(0);
 
       graph->SetMaximum( max(gdata->GetY()[0],max(graph->GetY()[0],graph->GetY()[graph->GetN()-1]))*1.2);
-      graph->GetYaxis()->SetRangeUser(-18,0);
+      graph->GetYaxis()->SetRangeUser(0,20);
       //graph->SetMinimum( -20 );
       graph->Draw("APE0");
       if ( fit.GetLogNormal() )
