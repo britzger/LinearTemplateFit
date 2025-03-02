@@ -224,7 +224,8 @@ void LTF::SetLiTeFitInput() {
    fLTF.SysY        = Calc_dY(fSysY); // uncertainty of the templates,  dY
    fLTF.SysA        = fSysA; // uncertainty of response matrix A, dA
    fLTF.corrSys     = fcorrSys; // correlation coefficients of dY, dA
-
+   fLTF.y0new       = fy0New; // new nominal template
+   fLTF.a0new       = fa0New; // reference value of new nominal template
 
    // request log-normal uncertainties
    if ( fUseLog ) 
@@ -576,7 +577,7 @@ void LTF::LiTeFit::PrintFull() const {
    }
    std::cout<<std::endl;
    std::cout<<"  Chi^2                                "<< chisq << "  +/- "<<chisq_error<<std::endl;
-   std::cout<<"  Chi^2/ndf                            "<< chisq / (Dt.rows()-nPar) <<std::endl;
+   std::cout<<"  Chi^2/ndf                            "<< ((Dt.rows()-nPar)!=0 ? chisq / (Dt.rows()-nPar) : 0 ) <<std::endl;
    std::cout<<"  Chi^2 for each template              "<< chisq_y.transpose() <<endl;
    //std::cout<<"  Partial Chi^2:                  ";
    int kk=0;
@@ -755,6 +756,8 @@ void LTF::LiTeFit::ApplyLogNormalDistribution() {
          }
          Y(i,j)  = log(Y(i,j));
       }
+      if ( y0new.rows() > 0 )
+	 y0new(i) = log(y0new(i));
    }
 }
 
@@ -1161,19 +1164,38 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
    // since we expect that all member variables are initialized
    // with reasonable values (e.g. matrix-sizes, etc...)
 
-   //Eigen::MatrixXd  Mc = this->Mc(1,0) ; // linear template fit
+   //Eigen::MatrixXd  Mc = this->Mc(1,0) ; // linear template fit: use Mc(1,0);
    Eigen::MatrixXd  Mc = this->McApprox(mPolN,mOrdInfrc,aexp) ; // get linearised (non-linear) model
    Eigen::MatrixXd  W  = this->W()  ;
    
    // --- useful quantities
    const int nPar           = M.cols()-1;
    const int nParEps        = nPar + this->Sys.size();
-   ybar     = Y * Mc.row(0).transpose();
-   Eigen::VectorXd d_ybar   = Dt - ybar;
    // Eigen::MatrixXd Mtil     = Mc.bottomRows(Mc.rows()-1).transpose(); // ytil(Dt.rows(),nPar)
    // Eigen::MatrixXd Ytil     = Y * Mtil; // ytil(Dt.rows(),nPar)
    Eigen::MatrixXd Mtil     = Mc.bottomRows(Mc.rows()-1).transpose(); // ytil(Dt.rows(),nPar)
-   Ytil     = Y * Mtil; // ytil(Dt.rows(),nPar)
+   this->Ytil     = Y * Mtil; // ytil(Dt.rows(),nPar)
+   this->ybar     = Y * Mc.row(0).transpose();
+   // get ybar: if there is a new nominal template, then recalcluate Ytil accordingly.
+   if ( y0new.rows() == Dt.rows() && a0new.rows() == Mc.rows()-1 ) {
+      cout<<"old ybar: "<<endl;
+      cout<<ybar<<endl;
+      cout<<"Info. considering a new nominal template, but keeping the derivatives from the template matrix."<<endl;
+      this->ybar = y0new - Ytil * a0new;
+      cout<<"new ybar: "<<endl;
+      cout<<ybar<<endl;
+   }
+   else if (  y0new.rows() !=0 || a0new.rows() != 0 ) {
+      cerr<<"Error! A new nominal template is provided, but the size of the vector is incompatible with other input parameters."<<endl;
+      cout<<"y0new.rows():: "<<y0new.rows()<<endl;
+      cout<<"y0new.cols():: "<<y0new.cols()<<endl;
+      cout<<" a0new.rows(): "<<a0new.rows()<<endl;
+      cout<<" a0new.cols(): "<<a0new.cols()<<endl;
+      cout<<"Mc.cols():     "<<Mc.cols()<<endl;
+      cout<<"Mc.rows():     "<<Mc.rows()<<endl;
+      exit(1);
+   }
+   Eigen::VectorXd d_ybar   = Dt - ybar;
    
    // construct matrix YtS 
    Eigen::MatrixXd E        = Eigen::MatrixXd::Zero(nParEps,nParEps);
