@@ -105,6 +105,8 @@ public:
       double chisq = 0;                                                          //!< chi^2
       double chisq_error = 0;                                                    //!< uncertainty of chi^2
       Eigen::MatrixXd F;                                                         //!< Projection matrix of LiTeFit
+      Eigen::MatrixXd Hesse;                                                     //!< Hesse matrix of the fit
+      Eigen::MatrixXd InvHesse;                                                  //!< Inverse Hesse matrix of the fit, i.e. the total uncertainties
       Eigen::VectorXd chisq_y;                                                   //!< chi^2 for each template
       std::map<std::string,double> chisq_part;                                   //!< 'partial' chi^2 for each error source
       Eigen::VectorXd ahat;                                                      //!< results (a0, a1, ..., epsilon1, epsilon2,...)

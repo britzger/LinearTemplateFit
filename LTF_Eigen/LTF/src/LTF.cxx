@@ -559,7 +559,7 @@ void LTF::LiTeFit::PrintFull() const {
       for ( auto& [name,s] : DeltaSysY )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
       for ( auto& [name,s] : DeltaSysA )       printf("                             +/- % 8.6f (%s)\n", s(i), name.c_str());
    }
-   Eigen::MatrixXd V = VFit();
+   Eigen::MatrixXd V = InvHesse; // VFit(); VFit and InvHesse are equivalent for fit parameters, but different for nuisance parameters
    if ( ahat.rows() > nPar ) {
       std::cout<<std::endl;
       std::cout<<"  Nuisance parameters       ";
@@ -591,6 +591,17 @@ void LTF::LiTeFit::PrintFull() const {
    std::cout<<std::endl;
    
 
+   // --- Uncertainties from Hesse
+   std::cout<<std::endl;
+   std::cout<<"  Uncertainties from HESSE matrix"<<std::endl;
+   for ( int i = 0 ; i<nPar ; i++ ) {
+      std::cout<<"     LTF: Result["<<i<<"]:                   "<<ahat(i)<<"  +/- " 
+               << sqrt(InvHesse(i,i))<<" (fit [from HESSE])"
+               <<std::endl;
+   }
+   // one could also print nuisance parameters here...
+
+   
    // --- pol2-fit to chi2-'parabola
    std::cout<<std::endl;
    std::cout<<"  Alternative result from pol2-fit to chi^2 values of the templates"<<std::endl;
@@ -599,7 +610,7 @@ void LTF::LiTeFit::PrintFull() const {
    }
    std::cout<<"     Chi^2(min)                        "<<achk_chisq<<endl;
 
-
+   
    // --- linearized second-order model approximation 
    std::cout<<std::endl;
    std::cout<<"  Result from linearized second-order model approximation"<<std::endl;
@@ -1217,14 +1228,14 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
 
    // --- calculate result for mt and nuisance parameters epsilon
    Eigen::MatrixXd YtSTW        = YtS.transpose()*W;
-   Eigen::MatrixXd D = YtSTW*YtS + E;   // 'discriminant' matrix
-   if ( D.determinant() < 1.e-8 ) {
-      cout<<"Warning! Determinant of matrix D is very small! "<<endl;
-      cout<<"Printing matrix D"<<endl<<D<<endl<<endl;
-      cout<<"Printing matrix M^T "<<endl<<Mc<<endl<<endl;
+   this->Hesse = YtSTW*YtS + E;   // 'discriminant' matrix D, the Hesse matrix (formerly called 'D')
+   if ( Hesse.determinant() < 1.e-8 ) {
+      cout<<"Warning! Determinant of Hesse matrix D is very small! "<<endl;
+      cout<<"Printing Hesse matrix D"<<endl<<Hesse<<endl<<endl;
+      cout<<"Printing matrix M^T    "<<endl<<Mc<<endl<<endl;
    }
-   Eigen::MatrixXd Dinv         = D.inverse();
-   this->F           = Dinv * (YtSTW); // the LTF-master-matrix
+   this->InvHesse    = Hesse.inverse(); // the inverse Hesse matrix
+   this->F           = InvHesse * (YtSTW); // the LTF-master-matrix
    this->ahat        = F * d_ybar; // this is the final fit-result for the multivariate LTF !
    this->a0          = Gamma.empty() ? ahat(0,0) : pow( ahat(0,0), 1./this->Gamma[0] ) ; // this is the very final fit-result for the one-parameter fit !
 
@@ -1298,7 +1309,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
             Eigen::MatrixXd dYij_3   = YtSTW * d1ij * Mc.row(0).transpose(); // 3rd term 
             Eigen::MatrixXd dYij_4   = (YtSTW * d1M0 + d1M0.transpose() * W * YtS )  * ahat; //4th term (from D^-1)
             // partial derivative:
-            dYijs[i][j] = Dinv * ( dYij_1_2 - dYij_3 - dYij_4 ) ;
+            dYijs[i][j] = InvHesse * ( dYij_1_2 - dYij_3 - dYij_4 ) ;
          }
       }
 
@@ -1343,7 +1354,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
             Eigen::MatrixXd dAit_3   = YtSTW * d1it * X * Mc.row(0).transpose(); // 3rd term 
             Eigen::MatrixXd dAit_4   =  ( YtSTW * d1XM0 +  d1XM0.transpose() * W * YtS) * ahat; //4th term (from D^-1)
             // partial derivative:
-            dAits[i][t] = Dinv * ( dAit_1_2 - dAit_3 - dAit_4 ) ;
+            dAits[i][t] = InvHesse * ( dAit_1_2 - dAit_3 - dAit_4 ) ;
          }
       }
 
@@ -1389,7 +1400,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
             Eigen::MatrixXd dYij_3   = YtSTW * d1ij * Mc.row(0).transpose(); // 3rd term 
             Eigen::MatrixXd dYij_4   = (YtSTW * d1M0 + d1M0.transpose() * W * YtS )  * ahat; //4th term (from D^-1)
             // partial derivative:
-            dYijs[i][j] = Dinv * ( dYij_1_2 - dYij_3 - dYij_4 ) ;
+            dYijs[i][j] = InvHesse * ( dYij_1_2 - dYij_3 - dYij_4 ) ;
          }
       }
 
@@ -1601,7 +1612,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
             Eigen::MatrixXd YtSXY = Eigen::MatrixXd::Zero(Dt.rows(),nParEps); // 'n x 1'  matrix. elements: ytilde
             YtSXY.col(k) += Y.col(j);
             YtSXY.block(0,nPar,Dt.rows(),S.cols()) = S;
-            delta_m21 += (Dinv*( (YtSXY).transpose()*W*(d_ybar) - ((YtSXY).transpose()*W*YtS + YtSTW*YtSXY) * ahatgamma )) * dMtil2(j,k);
+            delta_m21 += (InvHesse*( (YtSXY).transpose()*W*(d_ybar) - ((YtSXY).transpose()*W*YtS + YtSTW*YtSXY) * ahatgamma )) * dMtil2(j,k);
          }
       }
       // apply gamma factor
