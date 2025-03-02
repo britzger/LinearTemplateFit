@@ -713,7 +713,7 @@ void LTF::LiTeFit::PrintFull() const {
    printf("     LogNormal                         %s\n",(LogNormal?"true":"false"));
    printf("     Response matrix                   %s\n",(A.GetNrows()?"true":"false"));
    std::cout<<std::endl;
-   std::cout<<"  please cite: (to be published)."<<std::endl;
+   std::cout<<"  please cite: D. Britzger, The Linear Template Fit, Eur.Phys.J.C 82 (2022) 731, arXiv:2112.01548."<<std::endl;
    std::cout<<"------------------------------------------------------------------------"<<std::endl;
    std::cout<<std::endl;
 }
