@@ -1545,7 +1545,7 @@ double LTF::LiTeFit::DoLiTeFit(int mPolN, int mOrdInfrc,  const Eigen::VectorXd&
          rr = (rr - S.col(is) * eps(is) ).eval();
          chisq_y(k) += eps(is)*eps(is);
       }
-      chisq_y(k) = (rr.transpose() * W * rr)(0);
+      chisq_y(k) += (rr.transpose() * W * rr)(0);
    }
 
 
